@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import Button from '../components/ui/Button.jsx';
 import { Rails } from '../components/layout/Rails.jsx';
+import LoomBackground from '../components/ui/LoomBackground.jsx';
+import LoomLogo from '../components/ui/LoomLogo.jsx';
 import { IMG, prefersReducedMotion } from '../lib/helpers.js';
 
 // [image, position, parallax factor, float phase]
@@ -37,9 +39,13 @@ export default function Hero({ onDemo }) {
 
   return (
     <Rails tone="dark">
-      <section style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface-inverse)' }}>
-        <div ref={bgRef} aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'url(/assets/backgrounds/woven-bars-dark.svg) center / cover', opacity: 0.9 }} />
-        <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 45% at 50% 22%, rgba(0,38,21,.92) 0%, rgba(0,38,21,.7) 55%, rgba(0,38,21,0) 100%), linear-gradient(180deg, rgba(0,38,21,.6) 0%, rgba(0,38,21,.25) 60%, rgba(0,38,21,.1) 100%)' }} />
+      <section id="hero" style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface-inverse)' }}>
+        {/* Loom animation stays within the content column, between the side rails. */}
+        <div aria-hidden="true" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, margin: '0 auto', width: 'calc(100% - 48px)', maxWidth: 1200, overflow: 'hidden' }}>
+          <div ref={bgRef} style={{ position: 'absolute', inset: 0 }}>
+            <LoomBackground />
+          </div>
+        </div>
 
         <div className="tl-wrap" style={{ position: 'relative', paddingTop: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24 }}>
           <h1 className="tl-h1" style={{ maxWidth: 820, color: 'var(--text-on-inverse)' }}>Vos données financières, prêtes pour l’IA</h1>
@@ -49,7 +55,7 @@ export default function Hero({ onDemo }) {
           <Button size="lg" variant="signal" onClick={onDemo}>Réserver une démo</Button>
         </div>
 
-        <div className="tl-wrap" style={{ position: 'relative', paddingTop: 72, paddingBottom: 120 }}>
+        <div className="tl-wrap" style={{ position: 'relative', zIndex: 1, paddingTop: 72 }}>
           <div style={{ position: 'relative', maxWidth: 1000, margin: '0 auto', padding: '4% 10% 8%' }}>
             <img ref={mainRef} src={IMG('aywmkcDXDCDsMg6cfZr8B6rNNs.png', 2048)} alt="Tableau de bord Trame" fetchpriority="high"
               style={{ width: '100%', display: 'block', borderRadius: 12, boxShadow: '0 40px 90px rgba(0,0,0,.35)' }} />
@@ -58,6 +64,11 @@ export default function Hero({ onDemo }) {
                 style={{ position: 'absolute', width: '28%', ...pos, borderRadius: 12, boxShadow: '0 24px 60px rgba(0,0,0,.35)', willChange: 'transform' }} />
             ))}
           </div>
+        </div>
+
+        {/* The Trame emblem woven from the threads, below the product screenshot. */}
+        <div className="tl-loom-band">
+          <LoomLogo />
         </div>
       </section>
     </Rails>

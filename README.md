@@ -23,14 +23,13 @@ src/
   sections/      Home (all sections), Hero, CardGrid, SectionHeading
   lib/helpers.js IMG() CDN helper, scrollToId()
 public/
-  assets/backgrounds/woven-bars-dark.svg   hero background
   favicon.svg
 ```
 
 ## Known gaps
 
-- **Images** are hotlinked from the live site's Framer CDN (`framerusercontent.com`). Download them into `public/` before decommissioning Framer.
-- **Hero background**: the design's `assets/backgrounds/woven-bars-dark.png` couldn't be exported in full, so `woven-bars-dark.svg` is a generated stand-in with the same motif. Drop the real PNG into `public/assets/backgrounds/` and update the URL in `src/sections/Hero.jsx`.
+- **Images** are hotlinked from the live site's Framer CDN (`framerusercontent.com`), except the closing-section landscape (`public/assets/illustrations/knit-landscape.png`). Download the rest into `public/` before decommissioning Framer.
+- **Hero background** is a canvas animation (`src/components/ui/LoomBackground.jsx`): bars slide along warp threads like heddles on a loom while a weft line sweeps across. It renders a still frame when the visitor prefers reduced motion and pauses when the hero is off-screen.
 - **Forms**: the demo modal and newsletter form don't submit anywhere yet (see the TODO in `DemoModal.jsx`).
 - The “Avis” nav link from the design was dropped — the page has no testimonials section yet.
 - Fonctionnalités tabs 2–5 have no description copy on the live site.

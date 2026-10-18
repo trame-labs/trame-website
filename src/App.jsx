@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Nav from './components/layout/Nav.jsx';
 import Footer from './components/layout/Footer.jsx';
-import { Rails } from './components/layout/Rails.jsx';
 import DemoModal from './components/DemoModal.jsx';
 import Home from './sections/Home.jsx';
 
@@ -12,7 +11,7 @@ export default function App() {
     <>
       <Nav onDemo={openDemo} />
       <Home onDemo={openDemo} />
-      <Rails><Footer /></Rails>
+      <Footer />
       <DemoModal open={demo} onClose={() => setDemo(false)} />
     </>
   );

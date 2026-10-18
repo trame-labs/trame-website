@@ -1,48 +1,53 @@
 import Button from '../ui/Button.jsx';
-import { IMG, scrollToId } from '../../lib/helpers.js';
+import Logo from '../ui/Logo.jsx';
+import { Divider, Rails } from './Rails.jsx';
+import { scrollToId } from '../../lib/helpers.js';
 
 const COLUMNS = [
   ['Menu', [['Fonctionnalités', '#features-section'], ['Bénéfices', '#benefit-section'], ['Cas d’usage', '#use-case-section']]],
   ['Blog', [['The Finance Shift', 'https://financeshift.substack.com/']]],
-  ['Contact', [['contact@trame-labs.com', 'mailto:contact@trame-labs.com'], ['Linkedin', 'https://www.linkedin.com/company/trame-labs']]],
+  ['Contact', [['contact@trame-labs.com', 'mailto:contact@trame-labs.com'], ['LinkedIn', 'https://www.linkedin.com/company/trame-labs']]],
 ];
+
+function FooterLink({ label, href }) {
+  const internal = href.startsWith('#');
+  return (
+    <a className="tl-footer-link" href={href}
+      onClick={internal ? (e) => { e.preventDefault(); scrollToId(href.slice(1)); } : undefined}
+      {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
+      {label}
+    </a>
+  );
+}
 
 export default function Footer() {
   return (
-    <footer style={{ background: 'var(--surface-page)', boxShadow: 'inset 0 1px 0 var(--border-subtle)' }}>
-      <div className="tl-wrap tl-footer-grid" style={{ paddingTop: 64, paddingBottom: 40 }}>
-        {COLUMNS.map(([title, items]) => (
-          <div key={title} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <span className="tl-eyebrow">{title}</span>
-            {items.map(([label, href]) => {
-              const internal = href.startsWith('#');
-              return (
-                <a key={label} href={href}
-                  onClick={internal ? (e) => { e.preventDefault(); scrollToId(href.slice(1)); } : undefined}
-                  {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                  style={{ color: 'var(--text-strong)', textDecoration: 'none', fontSize: 14 }}>
-                  {label}
-                </a>
-              );
-            })}
+    <footer className="tl-footer">
+      <Rails tone="warm">
+        <div className="tl-wrap tl-footer-grid" style={{ paddingTop: 56, paddingBottom: 56 }}>
+          {COLUMNS.map(([title, items]) => (
+            <div key={title} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <h3 className="tl-footer-title">{title}</h3>
+              {items.map(([label, href]) => <FooterLink key={label} label={label} href={href} />)}
+            </div>
+          ))}
+          {/* TODO: wire to the newsletter provider — currently a no-op. */}
+          <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <h3 className="tl-footer-title" style={{ marginBottom: 0 }}>Abonnez-vous !</h3>
+            <p style={{ margin: '0 0 8px', fontSize: 15, lineHeight: 1.5 }}>Inscrivez-vous à notre newsletter pour recevoir les derniers conseils, actualités et analyses</p>
+            <input className="tl-footer-input" type="email" required placeholder="votre email" aria-label="Email" />
+            <Button type="submit" style={{ width: '100%' }}>S’abonner</Button>
+          </form>
+        </div>
+
+        <Divider tone="warm" />
+        <div className="tl-wrap">
+          <div style={{ padding: '64px 0 40px' }}>
+            <Logo variant="alt" height={98} title="Trame Labs" style={{ width: '100%', height: 'auto' }} />
           </div>
-        ))}
-        <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <span style={{ fontSize: 18, fontWeight: 500 }}>Abonnez-vous !</span>
-          <span style={{ fontSize: 14, lineHeight: 1.5, color: 'var(--text-body)' }}>Inscrivez-vous à notre newsletter pour recevoir les derniers conseils, actualités et analyses</span>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input type="email" required placeholder="Email" aria-label="Email"
-              style={{ flex: 1, minWidth: 0, height: 40, padding: '0 12px', borderRadius: 6, border: 'none', boxShadow: 'var(--hairline-strong)', font: '400 14px var(--font-sans)', background: '#fff', outline: 'none' }} />
-            <Button type="submit" size="md">Submit</Button>
-          </div>
-        </form>
-      </div>
-      <div className="tl-wrap" style={{ paddingTop: 8 }}>
-        <img src={IMG('oryGb4kiK0VEZHRE6bgxNFbsJCc.png', 2048)} alt="Trame labs" loading="lazy" style={{ width: '100%', display: 'block' }} />
-      </div>
-      <div className="tl-wrap" style={{ paddingTop: 20, paddingBottom: 28, fontSize: 12, color: 'var(--text-muted)' }}>
-        © 2026 Trame labs. Tous droits réservés. Designed by arianemoder.
-      </div>
+          <p style={{ margin: 0, padding: '0 0 32px', fontSize: 15, color: 'var(--text-ink)' }}>© 2026 Trame labs. Tous droits réservés. Designed by arianemoder.</p>
+        </div>
+      </Rails>
     </footer>
   );
 }

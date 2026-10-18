@@ -1,4 +1,5 @@
-const lineColor = (tone) => (tone === 'dark' ? 'rgba(252,252,252,.16)' : 'var(--border-default)');
+const LINES = { light: 'var(--border-default)', dark: 'rgba(252,252,252,.16)', warm: 'rgba(0,38,21,.22)' };
+const lineColor = (tone) => LINES[tone] || LINES.light;
 
 /** Section separator: a single full-width hairline that meets the side rails. */
 export function Divider({ tone = 'light' }) {
