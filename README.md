@@ -23,7 +23,6 @@ src/
   sections/      Home (all sections), Hero, CardGrid, SectionHeading
   lib/helpers.js IMG() CDN helper, scrollToId()
 public/
-  assets/backgrounds/woven-bars-dark.svg   hero background
   favicon.svg
 ```
 
