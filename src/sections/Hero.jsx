@@ -39,7 +39,7 @@ export default function Hero({ onDemo }) {
 
   return (
     <Rails tone="dark">
-      <section style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface-inverse)' }}>
+      <section id="hero" style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface-inverse)' }}>
         {/* Loom animation stays within the content column, between the side rails. */}
         <div aria-hidden="true" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, margin: '0 auto', width: 'calc(100% - 48px)', maxWidth: 1200, overflow: 'hidden' }}>
           <div ref={bgRef} style={{ position: 'absolute', inset: 0 }}>

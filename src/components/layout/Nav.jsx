@@ -3,6 +3,8 @@ import Button from '../ui/Button.jsx';
 import Logo from '../ui/Logo.jsx';
 import { scrollToId } from '../../lib/helpers.js';
 
+const NAV_HEIGHT = 68;
+
 const LINKS = [
   ['use-case-section', 'Cas d’usage'],
   ['features-section', 'Fonctionnalités'],
@@ -11,9 +13,14 @@ const LINKS = [
 ];
 
 export default function Nav({ onDemo }) {
+  // `top` = the nav is over the dark hero: keep the dark style (and the hero's rail colour)
+  // until the hero has scrolled out from under it.
   const [top, setTop] = useState(true);
   useEffect(() => {
-    const onScroll = () => setTop(window.scrollY < 40);
+    const onScroll = () => {
+      const hero = document.getElementById('hero');
+      setTop(hero ? hero.getBoundingClientRect().bottom > NAV_HEIGHT : window.scrollY < 40);
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -27,7 +34,7 @@ export default function Nav({ onDemo }) {
       boxShadow: `inset 0 -1px 0 ${line}`, transition: 'background-color 220ms cubic-bezier(.2,.7,.2,1)',
     }}>
       <div style={{
-        width: 'calc(100% - 48px)', maxWidth: 1200, margin: '0 auto', padding: '0 32px', height: 68,
+        width: 'calc(100% - 48px)', maxWidth: 1200, margin: '0 auto', padding: '0 32px', height: NAV_HEIGHT,
         display: 'flex', alignItems: 'center', gap: 36, boxShadow: `inset 1px 0 0 ${line}, inset -1px 0 0 ${line}`,
       }}>
         <a href="#" aria-label="Trame Labs — accueil" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{ display: 'flex' }}>

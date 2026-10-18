@@ -64,7 +64,9 @@ a:hover { color: var(--brand-green-500); text-decoration-color: currentColor; }
 @media (max-width: 600px) {
   .tl-wrap { padding-inline: 40px; }
   .tl-section { padding-block: 64px; }
-  .tl-grid-4, .tl-footer-grid { grid-template-columns: minmax(0, 1fr); }
+  .tl-grid-4 { grid-template-columns: minmax(0, 1fr); }
+  .tl-footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 40px; }
+  .tl-footer-grid > form { max-width: none; }
   .tl-h1 { font-size: 40px; }
   .tl-h2 { font-size: 30px; }
   .tl-lead { font-size: 16px; }
