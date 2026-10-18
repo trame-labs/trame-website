@@ -50,7 +50,7 @@ function layout(w, h, dpr) {
   EMBLEM.forEach(([top, bottom], i) => {
     if (!xs[start + i]) return;
     const bh = Math.round((bottom - top) * s);
-    bars.push({ x: xs[start + i] - bw / 2, y: emblemTop + top * s, bh, color: WHITE, delay: 0.5 + i * 0.09, float: 0 });
+    bars.push({ x: xs[start + i] - bw / 2, y: emblemTop + top * s, bh, color: WHITE, delay: 0.1 + Math.abs(i - 4.5) * 0.03, float: 0 });
   });
 
   // Decorative pairs on either side of the emblem, leaving one empty thread around it.
@@ -61,23 +61,25 @@ function layout(w, h, dpr) {
     const color = DECOR[Math.floor(r() * DECOR.length)];
     const bh = Math.round(h * (0.25 + r() * 0.4));
     const y = Math.round(h * (0.05 + r() * 0.55));
-    const delay = r() * 1.2, phase = r() * Math.PI * 2, speed = 0.4 + r() * 0.4;
-    for (let k = 0; k < n; k++) bars.push({ x: xs[c + k] - bw / 2, y, bh, color, delay: delay + k * 0.07, float: 1, phase, speed });
+    const delay = r() * 0.3, phase = r() * Math.PI * 2, speed = 0.4 + r() * 0.4;
+    for (let k = 0; k < n; k++) bars.push({ x: xs[c + k] - bw / 2, y, bh, color, delay: delay + k * 0.02, float: 1, phase, speed });
     c += n + 1 + Math.floor(r() * 3);
   }
 
   bars.forEach((b, i) => {
-    b.dir = r() < 0.5 ? -1 : 1;
     b.sprite = grainyBar(bw, b.bh, b.color, dpr, 97 + i * 13);
   });
-  return { bars, bw };
+  return { bars, bw, lineY: Math.round(h * 0.12) };
 }
 
-const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+const STAGGER = 0.35; // max per-bar delay, as a share of the scroll progress
+const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
 
 /**
- * The emblem woven in threads: bars slide along the warp threads and settle into the Trame
- * logo, with coloured pairs drifting on either side.
+ * The emblem woven in threads. At the top of the page every bar sits on one line; as the visitor
+ * scrolls, the bars slide along their warp threads and build the Trame logo, with coloured pairs
+ * settling on either side. Scrolling back up un-weaves it.
  */
 export default function LoomLogo({ style }) {
   const canvasRef = useRef(null);
@@ -86,7 +88,8 @@ export default function LoomLogo({ style }) {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const reduced = prefersReducedMotion();
-    let raf, w = 0, h = 0, scene, visible = false, started = null;
+    let raf, w = 0, h = 0, scene, visible = true, shown = reduced ? 1 : 0;
+    const t0 = performance.now();
 
     const resize = () => {
       const [cw, ch, dpr] = fitCanvas(canvas, ctx);
@@ -94,33 +97,37 @@ export default function LoomLogo({ style }) {
       scene = layout(w, h, dpr);
     };
 
+    // 0 at the top of the page, 1 once the band's centre reaches the middle of the viewport.
+    const scrollTarget = () => {
+      const rect = canvas.getBoundingClientRect();
+      const range = Math.max(240, rect.top + window.scrollY + h / 2 - window.innerHeight / 2);
+      return clamp01(window.scrollY / range);
+    };
+
     const draw = (now) => {
+      const t = (now - t0) / 1000;
+      if (!reduced) shown += (scrollTarget() - shown) * 0.12; // smooth out wheel steps
       ctx.clearRect(0, 0, w, h);
-      const t = reduced || started === null ? Infinity : (now - started) / 1000;
       for (const b of scene.bars) {
-        const p = reduced ? 1 : easeOut(Math.min(1, Math.max(0, (t - b.delay) / 1.3)));
-        if (p <= 0) continue;
-        let y = b.y + b.dir * (1 - p) * h * 0.7;
-        if (b.float && !reduced && Number.isFinite(t)) y += Math.sin(t * b.speed + b.phase) * 10 * p;
-        ctx.globalAlpha = p;
+        const e = easeInOut(clamp01((shown - b.delay) / (1 - STAGGER)));
+        let y = scene.lineY + (b.y - scene.lineY) * e;
+        if (b.float && !reduced) y += Math.sin(t * b.speed + b.phase) * 10 * e;
         const { canvas: spr, m } = b.sprite;
         ctx.drawImage(spr, b.x - m, y - m, scene.bw + m * 2, b.bh + m * 2);
       }
-      ctx.globalAlpha = 1;
       if (!reduced && visible) raf = requestAnimationFrame(draw);
     };
 
     resize();
-    if (reduced) draw(0);
+    raf = requestAnimationFrame(draw);
 
-    const ro = new ResizeObserver(() => { resize(); if (reduced) draw(0); });
+    const ro = new ResizeObserver(() => { resize(); if (reduced) draw(performance.now()); });
     ro.observe(canvas);
-    // Weave the logo the first time the band scrolls into view; pause while it's off-screen.
+    // Pause while the band is off-screen.
     const io = new IntersectionObserver(([entry]) => {
       const was = visible; visible = entry.isIntersecting;
-      if (visible && started === null) started = performance.now();
       if (visible && !was && !reduced) raf = requestAnimationFrame(draw);
-    }, { threshold: 0.15 });
+    });
     io.observe(canvas);
 
     return () => { cancelAnimationFrame(raf); ro.disconnect(); io.disconnect(); };
