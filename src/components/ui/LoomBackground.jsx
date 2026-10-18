@@ -1,44 +1,30 @@
 import { useEffect, useRef } from 'react';
 import { prefersReducedMotion } from '../../lib/helpers.js';
 
-// Brand colours for the bars: soft green, signal yellow, warm, off-white.
-const PALETTE = [[217, 254, 188], [233, 252, 148], [255, 217, 119], [240, 245, 235], [195, 217, 180]];
+const PITCH = 31; // px between warp threads
 
 /** Seeded PRNG so the composition is stable between renders. */
 function rng(seed) {
   return () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 }
 
-/**
- * Lays out an even grid of warp threads, then groups of 2–3 bars that ride on neighbouring
- * threads. Each bar slides along its thread, lifting and dropping like a loom's heddles.
- */
-function buildThreads(width, height) {
+/** Even grid of warp threads, each with its own pulse timing. */
+function buildThreads(width) {
   const r = rng(11);
-  const BW = Math.max(14, Math.round(width / 54));
-  const PITCH = BW + Math.round(BW * 0.4);
   const cols = Math.floor(width / PITCH);
-  const offset = (width - cols * PITCH) / 2 + PITCH / 2;     // centre the grid in the column
-  const lines = Array.from({ length: cols }, (_, i) => Math.round(offset + i * PITCH));
-  const groups = [];
-  for (let c = 1; c < cols - 1; ) {
-    const n = Math.min(2 + Math.floor(r() * 2), cols - 1 - c);
-    const color = PALETTE[Math.floor(r() * PALETTE.length)];
-    groups.push({
-      bars: lines.slice(c, c + n).map((x) => x - BW / 2), color,
-      base: r() * height,                 // resting centre
-      len: height * (0.08 + r() * 0.16),  // bar length
-      amp: height * (0.06 + r() * 0.18),  // travel along the thread
-      speed: 0.25 + r() * 0.45,
-      phase: r() * Math.PI * 2,
-      alpha: 0.4 + r() * 0.4,
-      lag: 0.35 + r() * 0.5,              // phase offset between neighbouring bars
-    });
-    c += n + 2 + Math.floor(r() * 4);
-  }
-  return { groups, lines, BW };
+  const offset = (width - cols * PITCH) / 2 + PITCH / 2; // centre the grid in the column
+  return Array.from({ length: cols }, (_, i) => ({
+    x: Math.round(offset + i * PITCH),
+    period: 5 + r() * 6,    // seconds between pulses on this thread
+    phase: r(),
+    len: 0.18 + r() * 0.22, // pulse length, as a share of the height
+  }));
 }
 
+/**
+ * Vertical warp threads fading from the top down, with soft light pulses running along them
+ * as if the threads were being drawn through the loom.
+ */
 export default function LoomBackground({ style }) {
   const canvasRef = useRef(null);
 
@@ -46,7 +32,7 @@ export default function LoomBackground({ style }) {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const reduced = prefersReducedMotion();
-    let raf, w = 0, h = 0, threads, visible = true;
+    let raf, w = 0, h = 0, threads = [], visible = true;
     const t0 = performance.now();
 
     const resize = () => {
@@ -54,63 +40,37 @@ export default function LoomBackground({ style }) {
       w = canvas.clientWidth; h = canvas.clientHeight;
       canvas.width = w * dpr; canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      threads = buildThreads(w, h);
+      threads = buildThreads(w);
     };
 
     const draw = (now) => {
       const t = reduced ? 0 : (now - t0) / 1000;
       ctx.clearRect(0, 0, w, h);
-      const { groups, lines, BW } = threads;
 
-      // The weft: a soft horizontal shuttle that crosses every ~9s and lights up the bars it passes.
-      const shuttleX = ((t / 9) % 1) * (w + 400) - 200;
-      const shuttleY = h * (0.55 + 0.25 * Math.sin(t / 5));
+      // Threads: strongest at the top, fading downwards.
+      const fade = ctx.createLinearGradient(0, 0, 0, h);
+      fade.addColorStop(0, 'rgba(252,252,252,0.30)');
+      fade.addColorStop(0.45, 'rgba(252,252,252,0.12)');
+      fade.addColorStop(1, 'rgba(252,252,252,0)');
+      ctx.fillStyle = fade;
+      for (const th of threads) ctx.fillRect(th.x, 0, 1, h);
 
-      ctx.filter = 'blur(2px)';
-      for (const g of groups) {
-        g.bars.forEach((x, i) => {
-          const y = g.base + Math.sin(t * g.speed + g.phase - i * g.lag) * g.amp - g.len / 2;
-          const near = Math.max(0, 1 - Math.abs(x - shuttleX) / 220);
-          const a = Math.min(0.95, g.alpha + near * 0.45);
-          const [r, gg, b] = g.color;
-          ctx.fillStyle = `rgba(${r},${gg},${b},${a})`;
-          ctx.fillRect(x, y, BW, g.len);
-        });
+      // Pulses travel down each thread and fade out with the same dégradé.
+      if (!reduced) {
+        for (const th of threads) {
+          const p = ((t / th.period + th.phase) % 1) * 1.6 - 0.3; // -0.3 → 1.3 so it enters and leaves fully
+          const len = th.len * h;
+          const head = p * h;
+          const tail = head - len;
+          if (head < 0 || tail > h) continue;
+          const strength = Math.max(0, 1 - head / h) * 0.9;
+          const g = ctx.createLinearGradient(0, tail, 0, head);
+          g.addColorStop(0, 'rgba(233,252,148,0)');
+          g.addColorStop(1, `rgba(233,252,148,${strength.toFixed(3)})`);
+          ctx.fillStyle = g;
+          ctx.fillRect(th.x - 0.5, tail, 2, len);
+        }
       }
-      ctx.filter = 'none';
-
-      // Vignette keeps the headline readable: dark ellipse behind the copy + top-down fade.
-      ctx.save();
-      ctx.translate(w / 2, h * 0.22);
-      ctx.scale(1, (h * 0.45) / (w * 0.6));
-      const vg = ctx.createRadialGradient(0, 0, 0, 0, 0, w * 0.6);
-      vg.addColorStop(0, 'rgba(0,38,21,.92)');
-      vg.addColorStop(0.55, 'rgba(0,38,21,.7)');
-      vg.addColorStop(1, 'rgba(0,38,21,0)');
-      ctx.fillStyle = vg;
-      ctx.fillRect(-w, -h * 3, w * 2, h * 6);
-      ctx.restore();
-      const lg = ctx.createLinearGradient(0, 0, 0, h);
-      lg.addColorStop(0, 'rgba(0,38,21,.6)');
-      lg.addColorStop(0.6, 'rgba(0,38,21,.25)');
-      lg.addColorStop(1, 'rgba(0,38,21,.1)');
-      ctx.fillStyle = lg;
-      ctx.fillRect(0, 0, w, h);
-
-      // Warp threads drawn over the vignette, strongest at the top and fading downwards.
-      const tg = ctx.createLinearGradient(0, 0, 0, h);
-      tg.addColorStop(0, 'rgba(252,252,252,0.30)');
-      tg.addColorStop(0.45, 'rgba(252,252,252,0.12)');
-      tg.addColorStop(1, 'rgba(252,252,252,0.04)');
-      ctx.fillStyle = tg;
-      for (const x of lines) ctx.fillRect(x, 0, 1, h);
-
-      const grad = ctx.createLinearGradient(shuttleX - 200, 0, shuttleX + 200, 0);
-      grad.addColorStop(0, 'rgba(233,252,148,0)');
-      grad.addColorStop(0.5, 'rgba(233,252,148,0.35)');
-      grad.addColorStop(1, 'rgba(233,252,148,0)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(shuttleX - 200, shuttleY, 400, 1.5);
 
       if (!reduced && visible) raf = requestAnimationFrame(draw);
     };
