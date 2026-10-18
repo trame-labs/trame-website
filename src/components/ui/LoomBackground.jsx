@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react';
 import { prefersReducedMotion } from '../../lib/helpers.js';
 import { fitCanvas, rng, threadXs } from './loomGrid.js';
 
+const FADE_IN = 0.2; // share of the height over which threads fade in from the top
+
 /**
  * Vertical warp threads fading from the top down, with soft light pulses running along them
  * as if the threads were being drawn through the loom.
@@ -31,9 +33,11 @@ export default function LoomBackground({ style }) {
       const t = reduced ? 0 : (now - t0) / 1000;
       ctx.clearRect(0, 0, w, h);
 
-      // Threads: strongest at the top, easing off but staying present where the logo is woven.
+      // Threads fade in under the nav, peak near the headline, then ease off but stay present
+      // where the logo is woven.
       const fade = ctx.createLinearGradient(0, 0, 0, h);
-      fade.addColorStop(0, 'rgba(252,252,252,0.30)');
+      fade.addColorStop(0, 'rgba(252,252,252,0)');
+      fade.addColorStop(FADE_IN, 'rgba(252,252,252,0.30)');
       fade.addColorStop(0.45, 'rgba(252,252,252,0.12)');
       fade.addColorStop(1, 'rgba(252,252,252,0.10)');
       ctx.fillStyle = fade;
@@ -47,7 +51,8 @@ export default function LoomBackground({ style }) {
           const head = p * h;
           const tail = head - len;
           if (head < 0 || tail > h) continue;
-          const strength = Math.max(0, 1 - head / h) * 0.9;
+          const fadeIn = Math.min(1, head / (FADE_IN * h));
+          const strength = fadeIn * Math.max(0, 1 - head / h) * 0.9;
           const g = ctx.createLinearGradient(0, tail, 0, head);
           g.addColorStop(0, 'rgba(233,252,148,0)');
           g.addColorStop(1, `rgba(233,252,148,${strength.toFixed(3)})`);
