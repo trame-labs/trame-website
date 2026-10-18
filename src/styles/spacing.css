@@ -1,0 +1,24 @@
+:root {
+  --space-1: 3px; --space-2: 4px; --space-3: 6px; --space-4: 8px; --space-5: 12px; --space-6: 16px;
+  --space-7: 20px; --space-8: 24px; --space-9: 35px; --space-10: 40px; --space-11: 64px; --space-12: 96px; --space-13: 144px;
+
+  --radius-xs: 3px;   /* logo tiles, highlight labels, brand chips */
+  --radius-sm: 5px;   /* cards, IA chip, Trame chip */
+  --radius-md: 6px;   /* buttons */
+  --radius-pill: 8px; /* category tags */
+  --radius-lg: 10px;  /* source panels */
+  --radius-xl: 12px;  /* popovers */
+  --radius-2xl: 20px; /* feature slabs */
+
+  --hairline: inset 0 0 0 1px var(--border-subtle);
+  --hairline-strong: inset 0 0 0 1px var(--border-default);
+  --shadow-glow: 0px 0px 24px 0px rgba(255,255,255,0.85);
+  --shadow-popover: 0px 8px 24px 0px rgba(18,41,28,0.1);
+  --shadow-tile: 0px 1px 3px 0px rgba(0,0,0,0.1), 0px 1px 2px -1px rgba(0,0,0,0.1);
+
+  --container-max: 1200px;
+  --gutter: 24px;
+  --ease-standard: cubic-bezier(.2,.7,.2,1);
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+}

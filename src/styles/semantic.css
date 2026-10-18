@@ -1,0 +1,45 @@
+/* Website-facing aliases over the Figma variables in fig-tokens.css */
+:root {
+  /* surfaces */
+  --surface-page: var(--neutral-10);          /* #FEFEFC off-white page */
+  --surface-card: var(--neutral-00);          /* #FFFFFF */
+  --surface-muted: var(--neutral-50);         /* #FAFAF6 */
+  --surface-soft: var(--soft-green-100);      /* #F0F5EB calm panels, secondary buttons */
+  --surface-sand: var(--info-100);            /* #F4F1E6 */
+  --surface-inverse: var(--brand-green-900);  /* #002615 deep forest */
+  --surface-inverse-raised: var(--brand-green-700); /* #0F3A27 */
+  --surface-popover: var(--brand-yellow-100); /* #FAFFE8 traceability popovers */
+
+  /* text */
+  --text-strong: var(--brand-green-900);      /* headlines + primary text (#002615) */
+  --text-ink: rgb(4,8,7);                     /* #040807 near-black data text */
+  --text-body: rgb(61,75,72);                 /* #3D4B48 body copy */
+  --text-muted: var(--neutral-500);           /* #7A8582 meta, breadcrumbs, eyebrows */
+  --text-on-inverse: var(--neutral-10);       /* #FEFEFC */
+  --text-on-inverse-muted: var(--soft-green-300);
+  --text-positive: var(--success-700);
+  --text-negative: var(--danger-500);
+  --text-variance: var(--warning-700);
+
+  /* borders */
+  --border-subtle: var(--neutral-100);        /* #EEF1EC card hairline */
+  --border-default: var(--neutral-200);       /* #DADDD7 */
+  --border-popover: var(--brand-yellow-300);
+  --border-warm: var(--warning-500);
+
+  /* accents */
+  --accent-signal: var(--brand-yellow-500);   /* #E9FC94 IA / highlight */
+  --accent-signal-soft: var(--brand-yellow-300);
+  --accent-warm: var(--warning-500);          /* #FFD977 */
+  --accent-warm-soft: var(--warning-100);
+  --accent-mint: var(--brand-green-300);      /* #8CD9B2 wordmark on dark */
+
+  /* action */
+  --action-primary-bg: var(--brand-green-900);
+  --action-primary-bg-hover: var(--brand-green-700);
+  --action-primary-fg: var(--neutral-10);
+  --action-secondary-bg: var(--soft-green-100);
+  --action-secondary-bg-hover: var(--soft-green-200);
+  --action-secondary-fg: rgb(61,75,72);
+  --focus-ring: var(--border-focus);
+}
