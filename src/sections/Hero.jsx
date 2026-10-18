@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import Button from '../components/ui/Button.jsx';
 import { Rails } from '../components/layout/Rails.jsx';
+import LoomBackground from '../components/ui/LoomBackground.jsx';
 import { IMG, prefersReducedMotion } from '../lib/helpers.js';
 
 // [image, position, parallax factor, float phase]
@@ -38,7 +39,9 @@ export default function Hero({ onDemo }) {
   return (
     <Rails tone="dark">
       <section style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface-inverse)' }}>
-        <div ref={bgRef} aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'url(/assets/backgrounds/woven-bars-dark.svg) center / cover', opacity: 0.9 }} />
+        <div ref={bgRef} aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.9 }}>
+          <LoomBackground />
+        </div>
         <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 45% at 50% 22%, rgba(0,38,21,.92) 0%, rgba(0,38,21,.7) 55%, rgba(0,38,21,0) 100%), linear-gradient(180deg, rgba(0,38,21,.6) 0%, rgba(0,38,21,.25) 60%, rgba(0,38,21,.1) 100%)' }} />
 
         <div className="tl-wrap" style={{ position: 'relative', paddingTop: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24 }}>

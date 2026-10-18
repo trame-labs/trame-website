@@ -108,18 +108,17 @@ export default function Home({ onDemo }) {
         </section>
 
         <Divider />
-        <section id="pricing-section" className="tl-wrap tl-section">
-          <div className="tl-cta">
-            <div className="tl-cta-body" style={{ padding: '56px 48px', display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'flex-start' }}>
-              <h2 className="tl-h2">Tissez la trame de vos décisions, pilotez en toute confiance</h2>
-              <p className="tl-lead">Réservez un premier échange et bénéficiez d’un état des lieux de vos sources, vos règles et vos points de friction. Vous repartez en sachant combien vous pouvez gagner.</p>
-              <Button size="lg" onClick={onDemo}>Découvrir Trame</Button>
-            </div>
-            <img src={IMG('GRQ3r1o4lxzvVRkGIfeAEUyy6xY.png', 1400)} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          </div>
-        </section>
-        <Divider />
       </Rails>
+
+      {/* Closing CTA: centred copy over the full-bleed knitted landscape. */}
+      <section id="pricing-section" style={{ position: 'relative', background: 'var(--surface-soft)', boxShadow: 'inset 0 1px 0 var(--brand-green-900)', overflow: 'hidden' }}>
+        <div className="tl-wrap" style={{ position: 'relative', zIndex: 1, paddingTop: 72, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24 }}>
+          <h2 className="tl-h2 tl-h2--xl" style={{ maxWidth: 860, color: 'var(--text-ink)' }}>Tissez la trame de vos décisions, pilotez en toute confiance</h2>
+          <p className="tl-lead tl-lead--sm" style={{ maxWidth: 620, color: 'var(--neutral-600)' }}>Réservez un premier échange et bénéficiez d’un état des lieux de vos sources, vos règles et vos points de friction. Vous repartez en sachant combien vous pouvez gagner.</p>
+          <Button size="lg" onClick={onDemo} style={{ marginTop: 8 }}>Réserver une démo</Button>
+        </div>
+        <img className="tl-cta-landscape" src={IMG('GRQ3r1o4lxzvVRkGIfeAEUyy6xY.png', 2048)} alt="" loading="lazy" />
+      </section>
     </main>
   );
 }
