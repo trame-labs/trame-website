@@ -39,10 +39,12 @@ export default function Hero({ onDemo }) {
   return (
     <Rails tone="dark">
       <section style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface-inverse)' }}>
-        <div ref={bgRef} aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0.9 }}>
-          <LoomBackground />
+        {/* Loom animation stays within the content column, between the side rails. */}
+        <div aria-hidden="true" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, margin: '0 auto', width: 'calc(100% - 48px)', maxWidth: 1200, overflow: 'hidden' }}>
+          <div ref={bgRef} style={{ position: 'absolute', inset: 0 }}>
+            <LoomBackground />
+          </div>
         </div>
-        <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 45% at 50% 22%, rgba(0,38,21,.92) 0%, rgba(0,38,21,.7) 55%, rgba(0,38,21,0) 100%), linear-gradient(180deg, rgba(0,38,21,.6) 0%, rgba(0,38,21,.25) 60%, rgba(0,38,21,.1) 100%)' }} />
 
         <div className="tl-wrap" style={{ position: 'relative', paddingTop: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24 }}>
           <h1 className="tl-h1" style={{ maxWidth: 820, color: 'var(--text-on-inverse)' }}>Vos données financières, prêtes pour l’IA</h1>

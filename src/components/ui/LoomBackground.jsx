@@ -10,21 +10,22 @@ function rng(seed) {
 }
 
 /**
- * Builds groups of 2–3 bars ("warp threads") across the width. Each bar slides along its
- * thread, lifting and dropping like a loom's heddles.
+ * Lays out an even grid of warp threads, then groups of 2–3 bars that ride on neighbouring
+ * threads. Each bar slides along its thread, lifting and dropping like a loom's heddles.
  */
 function buildThreads(width, height) {
   const r = rng(11);
   const BW = Math.max(14, Math.round(width / 54));
-  const GAP = Math.round(BW * 0.4);
+  const PITCH = BW + Math.round(BW * 0.4);
+  const cols = Math.floor(width / PITCH);
+  const offset = (width - cols * PITCH) / 2 + PITCH / 2;     // centre the grid in the column
+  const lines = Array.from({ length: cols }, (_, i) => Math.round(offset + i * PITCH));
   const groups = [];
-  for (let x = BW; x < width - BW; ) {
-    const n = 2 + Math.floor(r() * 2);
+  for (let c = 1; c < cols - 1; ) {
+    const n = Math.min(2 + Math.floor(r() * 2), cols - 1 - c);
     const color = PALETTE[Math.floor(r() * PALETTE.length)];
-    const bars = [];
-    for (let k = 0; k < n; k++) bars.push(x + k * (BW + GAP));
     groups.push({
-      bars, color,
+      bars: lines.slice(c, c + n).map((x) => x - BW / 2), color,
       base: r() * height,                 // resting centre
       len: height * (0.08 + r() * 0.16),  // bar length
       amp: height * (0.06 + r() * 0.18),  // travel along the thread
@@ -33,9 +34,9 @@ function buildThreads(width, height) {
       alpha: 0.4 + r() * 0.4,
       lag: 0.35 + r() * 0.5,              // phase offset between neighbouring bars
     });
-    x += n * (BW + GAP) + BW * (1.5 + r() * 4);
+    c += n + 2 + Math.floor(r() * 4);
   }
-  return { groups, BW };
+  return { groups, lines, BW };
 }
 
 export default function LoomBackground({ style }) {
@@ -59,11 +60,7 @@ export default function LoomBackground({ style }) {
     const draw = (now) => {
       const t = reduced ? 0 : (now - t0) / 1000;
       ctx.clearRect(0, 0, w, h);
-      const { groups, BW } = threads;
-
-      // Fine warp threads behind everything.
-      ctx.fillStyle = 'rgba(252,252,252,0.05)';
-      for (const g of groups) for (const x of g.bars) ctx.fillRect(x + BW / 2, 0, 1, h);
+      const { groups, lines, BW } = threads;
 
       // The weft: a soft horizontal shuttle that crosses every ~9s and lights up the bars it passes.
       const shuttleX = ((t / 9) % 1) * (w + 400) - 200;
@@ -81,6 +78,32 @@ export default function LoomBackground({ style }) {
         });
       }
       ctx.filter = 'none';
+
+      // Vignette keeps the headline readable: dark ellipse behind the copy + top-down fade.
+      ctx.save();
+      ctx.translate(w / 2, h * 0.22);
+      ctx.scale(1, (h * 0.45) / (w * 0.6));
+      const vg = ctx.createRadialGradient(0, 0, 0, 0, 0, w * 0.6);
+      vg.addColorStop(0, 'rgba(0,38,21,.92)');
+      vg.addColorStop(0.55, 'rgba(0,38,21,.7)');
+      vg.addColorStop(1, 'rgba(0,38,21,0)');
+      ctx.fillStyle = vg;
+      ctx.fillRect(-w, -h * 3, w * 2, h * 6);
+      ctx.restore();
+      const lg = ctx.createLinearGradient(0, 0, 0, h);
+      lg.addColorStop(0, 'rgba(0,38,21,.6)');
+      lg.addColorStop(0.6, 'rgba(0,38,21,.25)');
+      lg.addColorStop(1, 'rgba(0,38,21,.1)');
+      ctx.fillStyle = lg;
+      ctx.fillRect(0, 0, w, h);
+
+      // Warp threads drawn over the vignette, strongest at the top and fading downwards.
+      const tg = ctx.createLinearGradient(0, 0, 0, h);
+      tg.addColorStop(0, 'rgba(252,252,252,0.30)');
+      tg.addColorStop(0.45, 'rgba(252,252,252,0.12)');
+      tg.addColorStop(1, 'rgba(252,252,252,0.04)');
+      ctx.fillStyle = tg;
+      for (const x of lines) ctx.fillRect(x, 0, 1, h);
 
       const grad = ctx.createLinearGradient(shuttleX - 200, 0, shuttleX + 200, 0);
       grad.addColorStop(0, 'rgba(233,252,148,0)');
