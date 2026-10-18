@@ -31,6 +31,10 @@ a:hover { color: var(--brand-green-500); text-decoration-color: currentColor; }
 .tl-cta-frame { position: relative; width: calc(100% - 48px); max-width: var(--container-max); margin: 0 auto; background: var(--surface-soft); overflow: hidden; }
 .tl-cta-landscape { display: block; width: 100%; height: auto; min-width: 700px; margin: clamp(-150px, -9vw, -40px) 0 0 50%; transform: translateX(-50%); position: relative; }
 
+/* Hero: band under the product screenshot where the emblem is woven (same box as the thread canvas). */
+.tl-loom-band { position: relative; width: calc(100% - 48px); max-width: var(--container-max); height: 380px; margin: -24px auto 0; }
+@media (max-width: 700px) { .tl-loom-band { height: 240px; } }
+
 /* Footer */
 .tl-footer { background: var(--warning-500); color: var(--text-ink); }
 .tl-footer-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; }

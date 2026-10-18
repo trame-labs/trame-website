@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import Button from '../components/ui/Button.jsx';
 import { Rails } from '../components/layout/Rails.jsx';
 import LoomBackground from '../components/ui/LoomBackground.jsx';
+import LoomLogo from '../components/ui/LoomLogo.jsx';
 import { IMG, prefersReducedMotion } from '../lib/helpers.js';
 
 // [image, position, parallax factor, float phase]
@@ -54,7 +55,7 @@ export default function Hero({ onDemo }) {
           <Button size="lg" variant="signal" onClick={onDemo}>Réserver une démo</Button>
         </div>
 
-        <div className="tl-wrap" style={{ position: 'relative', paddingTop: 72, paddingBottom: 120 }}>
+        <div className="tl-wrap" style={{ position: 'relative', zIndex: 1, paddingTop: 72 }}>
           <div style={{ position: 'relative', maxWidth: 1000, margin: '0 auto', padding: '4% 10% 8%' }}>
             <img ref={mainRef} src={IMG('aywmkcDXDCDsMg6cfZr8B6rNNs.png', 2048)} alt="Tableau de bord Trame" fetchpriority="high"
               style={{ width: '100%', display: 'block', borderRadius: 12, boxShadow: '0 40px 90px rgba(0,0,0,.35)' }} />
@@ -63,6 +64,11 @@ export default function Hero({ onDemo }) {
                 style={{ position: 'absolute', width: '28%', ...pos, borderRadius: 12, boxShadow: '0 24px 60px rgba(0,0,0,.35)', willChange: 'transform' }} />
             ))}
           </div>
+        </div>
+
+        {/* The Trame emblem woven from the threads, below the product screenshot. */}
+        <div className="tl-loom-band">
+          <LoomLogo />
         </div>
       </section>
     </Rails>

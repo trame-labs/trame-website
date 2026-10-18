@@ -1,25 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { prefersReducedMotion } from '../../lib/helpers.js';
-
-const PITCH = 31; // px between warp threads
-
-/** Seeded PRNG so the composition is stable between renders. */
-function rng(seed) {
-  return () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-}
-
-/** Even grid of warp threads, each with its own pulse timing. */
-function buildThreads(width) {
-  const r = rng(11);
-  const cols = Math.floor(width / PITCH);
-  const offset = (width - cols * PITCH) / 2 + PITCH / 2; // centre the grid in the column
-  return Array.from({ length: cols }, (_, i) => ({
-    x: Math.round(offset + i * PITCH),
-    period: 5 + r() * 6,    // seconds between pulses on this thread
-    phase: r(),
-    len: 0.18 + r() * 0.22, // pulse length, as a share of the height
-  }));
-}
+import { fitCanvas, rng, threadXs } from './loomGrid.js';
 
 /**
  * Vertical warp threads fading from the top down, with soft light pulses running along them
@@ -36,26 +17,29 @@ export default function LoomBackground({ style }) {
     const t0 = performance.now();
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = canvas.clientWidth; h = canvas.clientHeight;
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      threads = buildThreads(w);
+      [w, h] = fitCanvas(canvas, ctx);
+      const r = rng(11);
+      threads = threadXs(w).map((x) => ({
+        x,
+        period: 5 + r() * 6,    // seconds between pulses on this thread
+        phase: r(),
+        len: 0.18 + r() * 0.22, // pulse length, as a share of the height
+      }));
     };
 
     const draw = (now) => {
       const t = reduced ? 0 : (now - t0) / 1000;
       ctx.clearRect(0, 0, w, h);
 
-      // Threads: strongest at the top, fading downwards.
+      // Threads: strongest at the top, easing off but staying present where the logo is woven.
       const fade = ctx.createLinearGradient(0, 0, 0, h);
       fade.addColorStop(0, 'rgba(252,252,252,0.30)');
       fade.addColorStop(0.45, 'rgba(252,252,252,0.12)');
-      fade.addColorStop(1, 'rgba(252,252,252,0)');
+      fade.addColorStop(1, 'rgba(252,252,252,0.10)');
       ctx.fillStyle = fade;
       for (const th of threads) ctx.fillRect(th.x, 0, 1, h);
 
-      // Pulses travel down each thread and fade out with the same dégradé.
+      // Pulses travel down each thread and fade out as they go.
       if (!reduced) {
         for (const th of threads) {
           const p = ((t / th.period + th.phase) % 1) * 1.6 - 0.3; // -0.3 → 1.3 so it enters and leaves fully
