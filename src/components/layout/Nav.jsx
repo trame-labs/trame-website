@@ -22,7 +22,7 @@ export default function Nav({ onDemo }) {
   return (
     <header style={{
       position: 'sticky', top: 0, zIndex: 20,
-      background: top ? 'var(--surface-inverse)' : 'rgba(254,254,252,.88)',
+      background: top ? 'var(--surface-inverse)' : 'rgba(240,245,235,.88)',
       backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
       boxShadow: `inset 0 -1px 0 ${line}`, transition: 'background-color 220ms cubic-bezier(.2,.7,.2,1)',
     }}>

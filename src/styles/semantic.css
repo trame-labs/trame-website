@@ -1,7 +1,7 @@
 /* Website-facing aliases over the Figma variables in fig-tokens.css */
 :root {
   /* surfaces */
-  --surface-page: var(--neutral-10);          /* #FEFEFC off-white page */
+  --surface-page: var(--soft-green-100);      /* #F0F5EB pale green page, same as the closing landscape panel */
   --surface-card: var(--neutral-00);          /* #FFFFFF */
   --surface-muted: var(--neutral-50);         /* #FAFAF6 */
   --surface-soft: var(--soft-green-100);      /* #F0F5EB calm panels, secondary buttons */
