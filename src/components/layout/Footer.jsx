@@ -26,7 +26,7 @@ export default function Footer() {
       <Rails tone="warm">
         <div className="tl-wrap tl-footer-grid" style={{ paddingTop: 56, paddingBottom: 56 }}>
           {COLUMNS.map(([title, items]) => (
-            <div key={title} style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+            <div key={title} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <h3 className="tl-footer-title">{title}</h3>
               {items.map(([label, href]) => <FooterLink key={label} label={label} href={href} />)}
             </div>
@@ -34,9 +34,9 @@ export default function Footer() {
           {/* TODO: wire to the newsletter provider — currently a no-op. */}
           <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <h3 className="tl-footer-title" style={{ marginBottom: 0 }}>Abonnez-vous !</h3>
-            <p style={{ margin: '0 0 12px', fontSize: 18, lineHeight: 1.5 }}>Inscrivez-vous à notre newsletter pour recevoir les derniers conseils, actualités et analyses</p>
+            <p style={{ margin: '0 0 8px', fontSize: 15, lineHeight: 1.5 }}>Inscrivez-vous à notre newsletter pour recevoir les derniers conseils, actualités et analyses</p>
             <input className="tl-footer-input" type="email" required placeholder="votre email" aria-label="Email" />
-            <Button type="submit" size="lg" style={{ width: '100%', fontSize: 18 }}>S’abonner</Button>
+            <Button type="submit" style={{ width: '100%' }}>S’abonner</Button>
           </form>
         </div>
 

@@ -31,6 +31,18 @@ a:hover { color: var(--brand-green-500); text-decoration-color: currentColor; }
 .tl-cta-frame { position: relative; width: calc(100% - 48px); max-width: var(--container-max); margin: 0 auto; background: var(--surface-soft); overflow: hidden; }
 .tl-cta-landscape { display: block; width: 100%; height: auto; min-width: 700px; margin: clamp(-150px, -9vw, -40px) 0 0 50%; transform: translateX(-50%); position: relative; }
 
+/* Intégrations: copy left, three drifting columns of logo tiles right. */
+.tl-integrations { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center; }
+.tl-logo-marquee { display: grid; grid-template-columns: repeat(3, 88px); gap: 20px; justify-content: center; height: 460px; overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 84%, transparent 100%); mask-image: linear-gradient(180deg, transparent 0%, #000 16%, #000 84%, transparent 100%); }
+.tl-logo-col { --gap: 20px; list-style: none; margin: 0; padding: 0 0 var(--gap); display: flex; flex-direction: column; gap: var(--gap); animation: tl-drift-down 28s linear infinite; }
+.tl-logo-col--up { animation-name: tl-drift-up; margin-top: -40px; }
+.tl-logo-tile { width: 88px; height: 88px; flex-shrink: 0; display: grid; place-items: center; border-radius: var(--radius-2xl); background: var(--surface-card); box-shadow: var(--shadow-popover); }
+.tl-logo-tile img { width: 40px; height: 40px; object-fit: contain; border-radius: var(--radius-lg); display: block; }
+/* Each column holds its logos four times (padded by one gap), so shifting by half moves exactly two sets. */
+@keyframes tl-drift-down { from { transform: translateY(-50%); } to { transform: translateY(0); } }
+@keyframes tl-drift-up { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+
 /* Hero: band under the product screenshot where the emblem is woven (same box as the thread canvas). */
 .tl-loom-band { position: relative; width: calc(100% - 48px); max-width: var(--container-max); height: 380px; margin: -24px auto 0; }
 @media (max-width: 700px) { .tl-loom-band { height: 240px; } }
@@ -38,10 +50,10 @@ a:hover { color: var(--brand-green-500); text-decoration-color: currentColor; }
 /* Footer */
 .tl-footer { background: var(--warning-500); color: var(--text-ink); }
 .tl-footer-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 32px; }
-.tl-footer-title { font: 500 20px/1.3 var(--font-sans); color: var(--text-ink); margin: 0 0 12px; }
-.tl-footer-link { font: 400 18px/1.4 var(--font-sans); color: var(--text-ink); text-decoration: none; }
+.tl-footer-title { font: 500 16px/1.3 var(--font-sans); color: var(--text-ink); margin: 0 0 6px; }
+.tl-footer-link { font: 400 15px/1.4 var(--font-sans); color: var(--text-ink); text-decoration: none; }
 .tl-footer-link:hover { color: var(--brand-green-500); }
-.tl-footer-input { height: 48px; padding: 0 18px; border-radius: 6px; border: 1px solid var(--brand-green-900); background: transparent; font: 400 18px var(--font-sans); color: var(--text-ink); outline: none; }
+.tl-footer-input { height: 40px; padding: 0 14px; border-radius: var(--radius-md); border: 1px solid var(--brand-green-900); background: transparent; font: 400 15px var(--font-sans); color: var(--text-ink); outline: none; }
 .tl-footer-input::placeholder { color: rgba(4, 8, 7, .35); }
 .tl-footer-input:focus { box-shadow: 0 0 0 2px var(--brand-green-900); }
 
@@ -52,6 +64,7 @@ a:hover { color: var(--brand-green-500); text-decoration-color: currentColor; }
 @media (max-width: 960px) {
   .tl-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 40px; }
   .tl-features { grid-template-columns: minmax(0, 1fr); }
+  .tl-integrations { grid-template-columns: minmax(0, 1fr); }
   .tl-footer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .tl-footer-grid > form { grid-column: 1 / -1; max-width: 480px; }
   .tl-h2--xl { font-size: 40px; }
@@ -72,8 +85,13 @@ a:hover { color: var(--brand-green-500); text-decoration-color: currentColor; }
   .tl-lead { font-size: 16px; }
   .tl-h2--xl { font-size: 32px; }
   .tl-cta-landscape { margin-top: 24px; }
+  .tl-logo-marquee { grid-template-columns: repeat(3, 72px); gap: 14px; height: 380px; }
+  .tl-logo-col { --gap: 14px; }
+  .tl-logo-tile { width: 72px; height: 72px; border-radius: var(--radius-xl); }
+  .tl-logo-tile img { width: 32px; height: 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; }
+  .tl-logo-col { animation: none; }
 }

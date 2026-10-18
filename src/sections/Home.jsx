@@ -1,12 +1,11 @@
 // One-page trame-labs.com. Copy is verbatim from the live site; images come from its Framer CDN.
 import { useState } from 'react';
 import Button from '../components/ui/Button.jsx';
-import BarField from '../components/ui/BarField.jsx';
 import { Divider, Rails } from '../components/layout/Rails.jsx';
 import { IMG } from '../lib/helpers.js';
 import Hero from './Hero.jsx';
 import CardGrid from './CardGrid.jsx';
-import SectionHeading, { Kicker } from './SectionHeading.jsx';
+import SectionHeading from './SectionHeading.jsx';
 
 const USE_CASES = [
   ['EoYUl2jSWuULd0DTq2fwObXe43k.png', 'Reconnaissance du revenu', 'Réconciliez CRM, facturation et comptabilité en continu.'],
@@ -35,6 +34,9 @@ const INTEGRATION_LOGOS = [
   'hyofzHc5RkniNlMjBW3pA9mKs.png', 'fLKC2tJ1qrnhMPmD3BX4u7NNdhM.jpeg', 'x8kFNV0kAjF1112stpbRplnHF8.webp', 'O6sZkwK1sJdHkymQhTiQfXnT6dw.webp',
   'N79fmGiEUwCwudqNst3vmpm8iM.png', 'ESRb8XUsjcdJw0KFUcsr08lAw.png', 'sOGQgqQpB2kY0xjSKtyV0iwdZgk.webp',
 ];
+
+// Three marquee columns of logo tiles: the outer ones drift down, the middle one up.
+const LOGO_COLUMNS = [0, 1, 2].map((c) => INTEGRATION_LOGOS.filter((_, i) => i % 3 === c));
 
 const column = { display: 'flex', flexDirection: 'column', gap: 40 };
 
@@ -87,24 +89,35 @@ export default function Home({ onDemo }) {
         <Divider />
         <section id="benefit-section" className="tl-wrap tl-section" style={column}>
           <SectionHeading kicker="Bénéfices">Des résultats dès le premier mois</SectionHeading>
-          <CardGrid items={BENEFITS} cardBackground="var(--surface-page)" />
+          <div className="tl-grid-4">
+            {BENEFITS.map(([file, title, desc]) => (
+              <article key={title} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <img src={IMG(file, 256)} alt="" loading="lazy" width="72" height="72" style={{ display: 'block', borderRadius: 'var(--radius-xl)' }} />
+                <h3 className="tl-h3">{title}</h3>
+                <p className="tl-lead tl-lead--sm">{desc}</p>
+              </article>
+            ))}
+          </div>
         </section>
 
         <Divider />
-        <section id="integration-section" className="tl-wrap tl-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 20 }}>
-          <Kicker>Intégrations</Kicker>
-          <h2 className="tl-h2" style={{ maxWidth: 760 }}>Aucune migration, Trame se branche sur vos outils existants</h2>
-          <p className="tl-lead" style={{ maxWidth: 600 }}>Trame propose plus de 100 connecteurs : comptabilité, ERP, CRM, banque et SIRH, synchronisés en temps réel.</p>
-          <BarField spacing={16} style={{ width: '100%', padding: '32px 0' }}>
-            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexWrap: 'wrap', gap: 14, justifyContent: 'center' }}>
-              {INTEGRATION_LOGOS.map((file, i) => (
-                <li key={file}>
-                  <img src={IMG(file, 256)} alt={'Intégration ' + (i + 1)} loading="lazy"
-                    style={{ width: 56, height: 56, objectFit: 'contain', borderRadius: 10, background: '#fff', display: 'block' }} />
-                </li>
-              ))}
-            </ul>
-          </BarField>
+        <section id="integration-section" className="tl-wrap tl-section tl-integrations">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <SectionHeading kicker="Intégrations" maxWidth={520}>Aucune migration, Trame se branche sur vos outils existants</SectionHeading>
+            <p className="tl-lead" style={{ maxWidth: 480 }}>Trame propose plus de 100 connecteurs : comptabilité, ERP, CRM, banque et SIRH, synchronisés en temps réel.</p>
+          </div>
+          <div className="tl-logo-marquee">
+            {LOGO_COLUMNS.map((logos, c) => (
+              <ul key={c} className={'tl-logo-col' + (c === 1 ? ' tl-logo-col--up' : '')}>
+                {/* Rendered four times so the -50% translate loops seamlessly. */}
+                {[...logos, ...logos, ...logos, ...logos].map((file, i) => (
+                  <li key={i} className="tl-logo-tile" aria-hidden={i >= logos.length || undefined}>
+                    <img src={IMG(file, 256)} alt={i < logos.length ? 'Intégration' : ''} loading="lazy" />
+                  </li>
+                ))}
+              </ul>
+            ))}
+          </div>
         </section>
 
         <Divider />
