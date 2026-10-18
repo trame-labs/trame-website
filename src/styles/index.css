@@ -28,7 +28,8 @@ a:hover { color: var(--brand-green-500); text-decoration-color: currentColor; }
 .tl-h2--xl { font-size: 56px; line-height: 1.12; }
 
 /* Closing CTA: the landscape rises up beside the centred copy (its sky is transparent). */
-.tl-cta-landscape { display: block; width: 100%; min-width: 900px; margin: clamp(-260px, -15vw, -48px) 0 0 50%; transform: translateX(-50%); position: relative; }
+.tl-cta-frame { position: relative; width: calc(100% - 48px); max-width: var(--container-max); margin: 0 auto; background: var(--surface-soft); overflow: hidden; }
+.tl-cta-landscape { display: block; width: 100%; height: auto; min-width: 700px; margin: clamp(-150px, -9vw, -40px) 0 0 50%; transform: translateX(-50%); position: relative; }
 
 /* Footer */
 .tl-footer { background: var(--warning-500); color: var(--text-ink); }

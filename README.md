@@ -28,7 +28,7 @@ public/
 
 ## Known gaps
 
-- **Images** are hotlinked from the live site's Framer CDN (`framerusercontent.com`). Download them into `public/` before decommissioning Framer.
+- **Images** are hotlinked from the live site's Framer CDN (`framerusercontent.com`), except the closing-section landscape (`public/assets/illustrations/knit-landscape.png`). Download the rest into `public/` before decommissioning Framer.
 - **Hero background** is a canvas animation (`src/components/ui/LoomBackground.jsx`): bars slide along warp threads like heddles on a loom while a weft line sweeps across. It renders a still frame when the visitor prefers reduced motion and pauses when the hero is off-screen.
 - **Forms**: the demo modal and newsletter form don't submit anywhere yet (see the TODO in `DemoModal.jsx`).
 - The “Avis” nav link from the design was dropped — the page has no testimonials section yet.

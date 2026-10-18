@@ -108,17 +108,18 @@ export default function Home({ onDemo }) {
         </section>
 
         <Divider />
-      </Rails>
 
-      {/* Closing CTA: centred copy over the full-bleed knitted landscape. */}
-      <section id="pricing-section" style={{ position: 'relative', background: 'var(--surface-soft)', boxShadow: 'inset 0 1px 0 var(--brand-green-900)', overflow: 'hidden' }}>
-        <div className="tl-wrap" style={{ position: 'relative', zIndex: 1, paddingTop: 72, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24 }}>
-          <h2 className="tl-h2 tl-h2--xl" style={{ maxWidth: 860, color: 'var(--text-ink)' }}>Tissez la trame de vos décisions, pilotez en toute confiance</h2>
-          <p className="tl-lead tl-lead--sm" style={{ maxWidth: 620, color: 'var(--neutral-600)' }}>Réservez un premier échange et bénéficiez d’un état des lieux de vos sources, vos règles et vos points de friction. Vous repartez en sachant combien vous pouvez gagner.</p>
-          <Button size="lg" onClick={onDemo} style={{ marginTop: 8 }}>Réserver une démo</Button>
-        </div>
-        <img className="tl-cta-landscape" src={IMG('GRQ3r1o4lxzvVRkGIfeAEUyy6xY.png', 2048)} alt="" loading="lazy" />
-      </section>
+        {/* Closing CTA: centred copy over the knitted landscape, framed by the side rails. */}
+        <section id="pricing-section" className="tl-cta-frame">
+          <div className="tl-wrap" style={{ position: 'relative', zIndex: 1, paddingTop: 72, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24 }}>
+            <h2 className="tl-h2 tl-h2--xl" style={{ maxWidth: 860, color: 'var(--text-ink)' }}>Tissez la trame de vos décisions, pilotez en toute confiance</h2>
+            <p className="tl-lead tl-lead--sm" style={{ maxWidth: 620, color: 'var(--neutral-600)' }}>Réservez un premier échange et bénéficiez d’un état des lieux de vos sources, vos règles et vos points de friction. Vous repartez en sachant combien vous pouvez gagner.</p>
+            <Button size="lg" onClick={onDemo} style={{ marginTop: 8 }}>Réserver une démo</Button>
+          </div>
+          <img className="tl-cta-landscape" src="/assets/illustrations/knit-landscape.png" alt="" width="1412" height="648" loading="lazy" />
+        </section>
+        <Divider />
+      </Rails>
     </main>
   );
 }
