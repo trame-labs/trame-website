@@ -1,23 +1,17 @@
 import Button from '../ui/Button.jsx';
 import Logo from '../ui/Logo.jsx';
 import { Divider, Rails } from './Rails.jsx';
-import { scrollToId } from '../../lib/helpers.js';
+import { Link } from '../../lib/router.js';
+import { PAGES, SECTORS, USE_CASES } from '../../content/routes.js';
 
 const COLUMNS = [
-  ['Menu', [['Fonctionnalités', '#features-section'], ['Bénéfices', '#benefit-section'], ['Cas d’usage', '#use-case-section']]],
-  ['Blog', [['The Finance Shift', 'https://financeshift.substack.com/']]],
-  ['Contact', [['contact@trame-labs.com', 'mailto:contact@trame-labs.com'], ['LinkedIn', 'https://www.linkedin.com/company/trame-labs']]],
+  ['Cas d’usage', USE_CASES.map((u) => [u.label, u.to])],
+  ['Trame', [...SECTORS, ...PAGES].map((p) => [p.label, p.to])],
+  ['Contact', [['contact@trame-labs.com', 'mailto:contact@trame-labs.com'], ['LinkedIn', 'https://www.linkedin.com/company/trame-labs'], ['Finance Shift, la newsletter', 'https://financeshift.substack.com/'], ['Mentions légales', '/mentions-legales']]],
 ];
 
 function FooterLink({ label, href }) {
-  const internal = href.startsWith('#');
-  return (
-    <a className="tl-footer-link" href={href}
-      onClick={internal ? (e) => { e.preventDefault(); scrollToId(href.slice(1)); } : undefined}
-      {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
-      {label}
-    </a>
-  );
+  return <Link className="tl-footer-link" to={href}>{label}</Link>;
 }
 
 export default function Footer() {

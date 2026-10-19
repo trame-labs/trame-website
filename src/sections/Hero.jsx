@@ -48,9 +48,9 @@ export default function Hero({ onDemo }) {
         </div>
 
         <div className="tl-wrap" style={{ position: 'relative', paddingTop: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24 }}>
-          <h1 className="tl-h1" style={{ maxWidth: 820, color: 'var(--text-on-inverse)' }}>Vos données financières, prêtes pour l’IA</h1>
-          <p className="tl-lead" style={{ maxWidth: 640, color: 'var(--text-on-inverse)' }}>
-            Vos décisions ne devraient plus dépendre d’un assemblage de tableurs et d’exports. Trame Labs unifie vos données financières en une base vivante et auditable, sur laquelle l’IA peut enfin analyser, expliquer et agir.
+          <h1 className="tl-h1" style={{ maxWidth: 820, color: 'var(--text-on-inverse)' }}>Votre finance engineer</h1>
+          <p className="tl-lead" style={{ maxWidth: 600, color: 'var(--text-on-inverse)' }}>
+            Compta, ventes, banques et paie rapprochées, arrêtées à J+5 et prêtes pour l’IA. Le travail d’un finance engineer, sans le recruter.
           </p>
           <Button size="lg" variant="signal" onClick={onDemo}>Réserver une démo</Button>
         </div>
