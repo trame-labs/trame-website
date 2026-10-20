@@ -8,6 +8,7 @@ const VARIANTS = {
   signal:    { bg: 'var(--brand-yellow-500)', hover: 'var(--brand-yellow-700)', fg: 'var(--brand-green-900)', ring: 'none' },
   inverse:   { bg: 'var(--neutral-10)', hover: 'var(--soft-green-100)', fg: 'var(--brand-green-900)', ring: 'none' },
   ghost:     { bg: 'transparent', hover: 'var(--surface-soft)', fg: 'var(--text-strong)', ring: 'none' },
+  ghostInverse: { bg: 'transparent', hover: 'rgba(240,245,235,.08)', fg: 'var(--text-on-inverse)', ring: 'inset 0 0 0 1px rgba(240,245,235,.35)' },
 };
 const SIZES = {
   sm: { h: 30, px: 9, fs: 13, gap: 8, icon: 14 },

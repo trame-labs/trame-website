@@ -1,36 +1,22 @@
 import { useEffect, useRef } from 'react';
-import Button from '../components/ui/Button.jsx';
 import { Rails } from '../components/layout/Rails.jsx';
 import LoomBackground from '../components/ui/LoomBackground.jsx';
 import LoomLogo from '../components/ui/LoomLogo.jsx';
-import { IMG, prefersReducedMotion } from '../lib/helpers.js';
+import { prefersReducedMotion } from '../lib/helpers.js';
 
-// [image, position, parallax factor, float phase]
-const FLOATERS = [
-  ['dwVAi75NIQiojV0MTDruu6z2NNA.png', { left: 0, top: '14%' }, -0.18, 0],
-  ['wGfE0Pq2G4druNK7mMrmpxKDH6w.png', { right: 0, top: 0 }, -0.3, 1.3],
-  ['CVp8EhqQ1k0rw6UCzQgruVAamI.png', { right: '6%', bottom: 0 }, -0.12, 2.6],
-];
-
-export default function Hero({ onDemo }) {
+/** Home hero: loom threads, the copy, the product example (children), then the Trame emblem woven from the threads. */
+export default function Hero({ kicker, title, lead, pills, ctas, children }) {
   const bgRef = useRef(null);
   const mainRef = useRef(null);
-  const floatRefs = useRef([]);
 
-  // Parallax + gentle float, written straight to the DOM so the section doesn't re-render every frame.
+  // Parallax, written straight to the DOM so the section doesn't re-render every frame.
   useEffect(() => {
     if (prefersReducedMotion()) return;
     let raf;
-    const t0 = performance.now();
-    const loop = (now) => {
+    const loop = () => {
       const y = Math.min(window.scrollY, 1200);
-      const t = (now - t0) / 1400;
       if (bgRef.current) bgRef.current.style.transform = `translateY(${y * 0.25}px)`;
       if (mainRef.current) mainRef.current.style.transform = `translateY(${y * -0.04}px)`;
-      FLOATERS.forEach(([, , k, ph], i) => {
-        const el = floatRefs.current[i];
-        if (el) el.style.transform = `translateY(${y * k + Math.sin(t + ph) * 6}px)`;
-      });
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -48,25 +34,18 @@ export default function Hero({ onDemo }) {
         </div>
 
         <div className="tl-wrap" style={{ position: 'relative', paddingTop: 120, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24 }}>
-          <h1 className="tl-h1" style={{ maxWidth: 820, color: 'var(--text-on-inverse)' }}>Votre finance engineer</h1>
-          <p className="tl-lead" style={{ maxWidth: 600, color: 'var(--text-on-inverse)' }}>
-            Compta, ventes, banques et paie rapprochées, arrêtées à J+5 et prêtes pour l’IA. Le travail d’un finance engineer, sans le recruter.
-          </p>
-          <Button size="lg" variant="signal" onClick={onDemo}>Réserver une démo</Button>
+          {kicker && <span className="tl-eyebrow" style={{ color: 'var(--brand-yellow-500)' }}>{kicker}</span>}
+          <h1 className="tl-h1" style={{ maxWidth: 820, color: 'var(--text-on-inverse)' }}>{title}</h1>
+          <p className="tl-lead tl-hero-lede" style={{ maxWidth: 640, color: 'var(--text-on-inverse)' }}>{lead}</p>
+          {pills && <ul className="tl-hero-pills">{pills.map((p) => <li key={p}>{p}</li>)}</ul>}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', marginTop: 4 }}>{ctas}</div>
         </div>
 
         <div className="tl-wrap" style={{ position: 'relative', zIndex: 1, paddingTop: 72 }}>
-          <div style={{ position: 'relative', maxWidth: 1000, margin: '0 auto', padding: '4% 10% 8%' }}>
-            <img ref={mainRef} src={IMG('aywmkcDXDCDsMg6cfZr8B6rNNs.png', 2048)} alt="Tableau de bord Trame" fetchpriority="high"
-              style={{ width: '100%', display: 'block', borderRadius: 12, boxShadow: '0 40px 90px rgba(0,0,0,.35)' }} />
-            {FLOATERS.map(([file, pos], i) => (
-              <img key={file} ref={(el) => { floatRefs.current[i] = el; }} src={IMG(file, 1024)} alt=""
-                style={{ position: 'absolute', width: '28%', ...pos, borderRadius: 12, boxShadow: '0 24px 60px rgba(0,0,0,.35)', willChange: 'transform' }} />
-            ))}
-          </div>
+          <div ref={mainRef} className="tl-hero-visual">{children}</div>
         </div>
 
-        {/* The Trame emblem woven from the threads, below the product screenshot. */}
+        {/* The Trame emblem woven from the threads, below the product example. */}
         <div className="tl-loom-band">
           <LoomLogo />
         </div>
