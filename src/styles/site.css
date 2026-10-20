@@ -480,3 +480,5 @@ section.band + section.band { border-top: 1px solid var(--line); }
 .tl-lang a:hover { opacity: 1; color: inherit; }
 .tl-dd-card { margin-top: 8px; background: var(--brand-green-50); }
 .tl-dd-card:hover { background: var(--brand-green-100) !important; }
+@media (max-width: 960px) { .tl-nav-login { display: none !important; } }
+.v1 .band.dark .voice blockquote { color: var(--ink); }

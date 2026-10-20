@@ -187,3 +187,11 @@ a:hover { color: var(--brand-green-500); text-decoration-color: currentColor; }
   * { scroll-behavior: auto !important; }
   .tl-logo-col { animation: none; }
 }
+
+/* Footer: guarantees row, signature and legal line (from the V1 mock-up) */
+.tl-footer-guar { display: flex; flex-wrap: wrap; gap: 8px 22px; padding-top: 22px; padding-bottom: 22px; font: 500 13.5px var(--font-sans); color: var(--text-ink); }
+.tl-footer-guar span { display: inline-flex; align-items: center; gap: 8px; }
+.tl-footer-guar span::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--brand-green-700); }
+.tl-footer-sig { margin: 0 0 32px; font: 300 26px var(--font-sans); letter-spacing: -0.02em; color: var(--text-ink); }
+.tl-footer-legal { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; padding: 0 0 32px; font-size: 14px; color: var(--text-ink); }
+.tl-footer-legal .tl-footer-link { font-size: 14px; }

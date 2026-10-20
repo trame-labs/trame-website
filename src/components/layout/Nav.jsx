@@ -14,7 +14,7 @@ function LangSwitch({ style }) {
   const { path, hash } = useLocation();
   const to = path + (hash ? '#' + hash : '');
   return (
-    <span className="tl-lang tl-nav-lang" role="group" aria-label="Langue / Language" style={style}>
+    <span className="tl-lang" role="group" aria-label="Langue / Language" style={style}>
       <Link to={to} lang="fr" hrefLang="fr" aria-current={lang === 'fr' ? 'true' : undefined}>FR</Link>
       <Link to={to} lang="en" hrefLang="en" aria-current={lang === 'en' ? 'true' : undefined}>EN</Link>
     </span>
@@ -97,9 +97,9 @@ export default function Nav({ path }) {
           {PAGES.map((p) => <Link key={p.to} to={p.to} style={linkStyle(path === p.to)} aria-current={path === p.to ? 'page' : undefined}>{L(p.label)}</Link>)}
         </nav>
         <span className="tl-nav-spacer" />
-        <LangSwitch style={{ color: dark ? 'var(--soft-green-200)' : 'var(--text-body)' }} />
+        <span className="tl-nav-lang"><LangSwitch style={{ color: dark ? 'var(--soft-green-200)' : 'var(--text-body)' }} /></span>
         {/* TODO: point to the product's sign-in URL. */}
-        <a href="#" className="tl-nav-lang" style={{ ...linkStyle(false) }}>{t('Se connecter', 'Sign in')}</a>
+        <a href="#" className="tl-nav-login" style={linkStyle(false)}>{t('Se connecter', 'Sign in')}</a>
         <Button size="sm" variant={dark ? 'signal' : 'primary'} href={localize('/demo', lang)} onClick={(e) => { e.preventDefault(); navigate(localize('/demo', lang)); }}>{t('Réserver une démo', 'Book a demo')}</Button>
         <button type="button" className="tl-burger" aria-expanded={mobile} aria-label={mobile ? t('Fermer le menu', 'Close menu') : t('Ouvrir le menu', 'Open menu')} onClick={() => setMobile((m) => !m)}
           style={{ color: dark ? 'var(--neutral-10)' : 'var(--text-strong)' }}>

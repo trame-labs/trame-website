@@ -4,7 +4,7 @@ export const USE_CASES = [
   { to: '/cas-usage/pnl-analytique', label: ['P&L analytique', 'Analytical P&L'], desc: ['Votre marge par client, produit ou canal, jusqu’à la pièce', 'Your margin by customer, product or channel, down to the document'] },
   { to: '/cas-usage/chiffre-affaires', label: ['Chiffre d’affaires', 'Revenue'], desc: ['Du contrat signé à l’écriture, chaque mois', 'From signed contract to ledger entry, every month'] },
   { to: '/cas-usage/consolidation', label: ['Consolidation', 'Consolidation'], desc: ['Votre groupe consolidé chaque mois, sans fichier Excel', 'Your group consolidated every month, without a spreadsheet'] },
-  { to: '/cas-usage/budget-realise', label: ['Budget / réalisé', 'Budget vs actuals'], desc: ['Quelle équipe dérape, de combien, et pourquoi', 'Which team is off budget, by how much, and why'] },
+  { to: '/cas-usage/budget-realise', label: ['Budget / réalisé', 'Budget vs. actuals'], desc: ['Quelle équipe dérape, de combien, et pourquoi', 'Which team is off budget, by how much, and why'] },
 ];
 
 export const SECTORS = [
