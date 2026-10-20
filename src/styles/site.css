@@ -482,3 +482,5 @@ section.band + section.band { border-top: 1px solid var(--line); }
 .tl-dd-card:hover { background: var(--brand-green-100) !important; }
 @media (max-width: 960px) { .tl-nav-login { display: none !important; } }
 .v1 .band.dark .voice blockquote { color: var(--ink); }
+/* Phones: tighter nav so the burger stays on screen */
+@media (max-width: 600px) { .tl-nav-inner { gap: 14px !important; padding: 0 16px !important; } .tl-nav-inner > a:first-child svg { height: 20px; width: auto; } }

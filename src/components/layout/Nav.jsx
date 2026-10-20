@@ -68,7 +68,7 @@ export default function Nav({ path }) {
       backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
       boxShadow: `inset 0 -1px 0 ${line}`, transition: 'background-color 220ms cubic-bezier(.2,.7,.2,1)',
     }}>
-      <div style={{
+      <div className="tl-nav-inner" style={{
         width: 'calc(100% - 48px)', maxWidth: 1200, margin: '0 auto', padding: '0 32px', height: NAV_HEIGHT,
         display: 'flex', alignItems: 'center', gap: 36, boxShadow: `inset 1px 0 0 ${line}, inset -1px 0 0 ${line}`,
       }}>
