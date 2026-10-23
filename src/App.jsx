@@ -16,6 +16,7 @@ import Securite from './pages/Securite.jsx';
 import Demo from './pages/Demo.jsx';
 import MentionsLegales from './pages/MentionsLegales.jsx';
 import NotFound from './pages/NotFound.jsx';
+import Simulateur from './pages/Simulateur.jsx';
 import { LangContext } from './lib/i18n.js';
 import { attachBehaviors } from './lib/behaviors.js';
 import { useLocation } from './lib/router.js';
@@ -34,6 +35,7 @@ export const PAGES = {
   '/finance-engineer': FinanceEngineer,
   '/integrations': Integrations,
   '/securite': Securite,
+  '/simulateur': Simulateur,
   '/demo': Demo,
   '/mentions-legales': MentionsLegales,
 };
