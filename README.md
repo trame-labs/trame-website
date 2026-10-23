@@ -24,7 +24,7 @@ src/
     Sprite.jsx   SVG icons used by the example cards
   sections/      Home, Hero (home hero with the woven emblem)
   pages/         one file per page (use cases, sectors, finance engineer, integrations, security, demo, legal)
-  content/       routes.js (site map, labels in FR and EN); simulator.js (fictional data and pure calculations behind /simulateur)
+  content/       routes.js (site map, labels in FR and EN); simulator.js (fictional data and pure calculations behind the home page's product screen)
   lib/router.js  tiny History API router (Link, navigate, usePageMeta); English pages live under /en
   entry-server.jsx  renders one URL to HTML at build time
 scripts/
@@ -42,7 +42,7 @@ To change a text, edit both sides of its `t('…', '…')` pair in the page file
 
 ## Pages
 
-`/`, `/cas-usage/{cash-analytique,pnl-analytique,chiffre-affaires,consolidation,budget-realise}`, `/secteurs/{saas,retail-e-commerce}`, `/finance-engineer`, `/integrations`, `/securite`, `/simulateur`, `/demo`, `/mentions-legales`, and the same under `/en`. Unknown paths show the 404 page.
+`/`, `/cas-usage/{cash-analytique,pnl-analytique,chiffre-affaires,consolidation,budget-realise}`, `/secteurs/{saas,retail-e-commerce}`, `/finance-engineer`, `/integrations`, `/securite`, `/demo`, `/mentions-legales`, and the same under `/en`. Unknown paths show the 404 page.
 
 To add a page: create it in `pages/`, call `usePageMeta(title, description)` in it, and add its path to `PAGES` in `App.jsx`. The build pre-renders it in both languages and adds it to the sitemap.
 

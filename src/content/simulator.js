@@ -1,4 +1,4 @@
-// Fictional company behind /simulateur: Orbis, a SaaS group with a French entity on Pennylane, a UK entity on Xero
+// Fictional company behind the home page's product screen: Orbis, a SaaS group with a French entity on Pennylane, a UK entity on Xero
 // and HubSpot as its CRM. Everything below is derived from the contracts, with pure functions: same inputs, same figures.
 
 /** '2026-09' → month index (year × 12 + month − 1), so months can be compared and added. */

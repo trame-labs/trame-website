@@ -5,7 +5,7 @@ import LoomLogo from '../components/ui/LoomLogo.jsx';
 import { prefersReducedMotion } from '../lib/helpers.js';
 
 /** Home hero: loom threads, the copy, the product example (children), then the Trame emblem woven from the threads. */
-export default function Hero({ kicker, title, lead, pills, ctas, children }) {
+export default function Hero({ kicker, title, lead, pills, ctas, wide, children }) {
   const bgRef = useRef(null);
   const mainRef = useRef(null);
 
@@ -42,7 +42,7 @@ export default function Hero({ kicker, title, lead, pills, ctas, children }) {
         </div>
 
         <div className="tl-wrap" style={{ position: 'relative', zIndex: 1, paddingTop: 72 }}>
-          <div ref={mainRef} className="tl-hero-visual">{children}</div>
+          <div ref={mainRef} className={wide ? 'tl-hero-visual wide' : 'tl-hero-visual'}>{children}</div>
         </div>
 
         {/* The Trame emblem woven from the threads, below the product example. */}
