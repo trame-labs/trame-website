@@ -1,0 +1,4 @@
+/* Demo page: the mock-up's hero (promises on the left, form on the right) under the site's centred hero copy. */
+.v1 .demo-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 48px; align-items: start; }
+.v1 .demo-hero .ticks li::before { background: var(--mint); }
+@media (max-width: 820px) { .v1 .demo-hero { grid-template-columns: minmax(0, 1fr); gap: 32px; } }
