@@ -28,6 +28,7 @@ const ICONS = {
   check: ['M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z', 'm8.5 12 2.5 2.5 4.5-5'],
   flag: ['M5 21V4', 'M5 4h11l-2 4 2 4H5'],
   ext: ['M7 17 17 7', 'M8 7h9v9'],
+  doc: ['M6 3h9l4 4v14H6z', 'M14 3v5h5', 'M9 12h6', 'M9 16h6'],
 };
 
 /** The product's tool run: the step in flight with a pulsing dot, then one checked line « N étapes · … ». */
@@ -95,24 +96,18 @@ export default function AgentDemo() {
   const count = (from, n) => Math.min(n, beat - IDX[from] + 1);
   const valid = at('valid');
 
-  // The rules file: its first lines, the rest folded, then what the agent writes (proposed until approved).
+  // The rules document: its first section, the rest folded, then the section the agent writes (proposed until approved).
   const rules = [
-    [1, t('# P&L analytique · Acme Groupe', '# Analytical P&L · Acme Group')],
-    [2, t('Consolidé, 2 entités, en k€. Arrêté le 7 du mois.', 'Consolidated, 2 entities, in €k. Closed on the 7th.')],
-    [3, t('## Masse salariale', '## Payroll')],
-    [4, t('- Comptes 641, 645 → Masse salariale, par entité.', '- Accounts 641, 645 → Payroll, by entity.'), id === 'r1c'],
-    [5, t('- Paie comptabilisée par l’écriture OD PAIE du mois.', '- Payroll booked through the month’s OD PAIE entry.')],
+    [t('Comptes 641 et 645, par entité, via l’écriture de paie du mois.', 'Accounts 641 and 645, by entity, via the month’s payroll entry.'), id === 'r1c'],
   ];
   const added = [
-    [215, t('## Masse salariale par département', '## Payroll by department')],
-    [216, t('- Source : Lucca, export de paie mensuel.', '- Source: Lucca, monthly payroll export.')],
-    [217, t('- 28 rubriques Lucca → 641100, 641300, 645100.', '- 28 Lucca pay items → 641100, 641300, 645100.')],
-    [218, t('- Ventilé selon le département du salarié.', '- Split by each employee’s department.')],
+    t('Source : la paie Lucca du mois, rapprochée des comptes 641 et 645.', 'Source: the month’s Lucca payroll, reconciled with accounts 641 and 645.'),
+    t('Chaque salaire va au département du salarié.', 'Each salary goes to the employee’s department.'),
   ];
 
   const history = [
     at('valid') && { who: 'Thomas', what: t('Valide la ventilation par département', 'Approves the split by department'), when: '14:03', status: 'validated' },
-    at('ask') && { who: 'agent', what: t('Propose les règles l. 215-218', 'Proposes rules l. 215-218'), when: '14:02', status: valid ? 'validated' : 'proposed' },
+    at('ask') && { who: 'agent', what: t('Propose la règle Ventilation par département', 'Proposes the Split by department rule'), when: '14:02', status: valid ? 'validated' : 'proposed' },
     at('r2e') && { who: 'agent', what: t('Crée le contrôle Paie ↔ compta', 'Creates the Payroll ↔ books control'), when: '14:02', status: 'done' },
     at('r1d') && { who: 'agent', what: t('Ajoute Lucca aux sources', 'Adds Lucca to the sources'), when: '14:01', status: 'done' },
     { who: 'Claire', what: t('Met à jour la règle Chiffre d’affaires', 'Updates the Revenue rule'), when: '03/09', status: 'validated' },
@@ -167,7 +162,7 @@ export default function AgentDemo() {
                 {at('text2') && <p className="ad-text">{t(<>3 contrôles concordent. <b>1 écart de 4 000 €</b> : une prime saisie dans Lucca après l’écriture de paie. Je la laisse à justifier.</>, <>3 checks match. <b>A €4,000 gap</b>: a bonus keyed into Lucca after the payroll entry. I leave it to be justified.</>)}</p>}
                 {at('ask') && (
                   <div className="ad-ask">
-                    <p>{t('Ventiler la masse salariale par département (règles l. 215-218) ?', 'Split payroll by department (rules l. 215-218)?')}</p>
+                    <p>{t('Ajouter la règle « Ventilation par département » ?', 'Add the “Split by department” rule?')}</p>
                     <button type="button" className={valid ? 'pressed' : undefined} disabled={valid} onClick={() => setBeat(IDX.valid)}>{valid ? t('Validé', 'Approved') : t('Valider', 'Approve')}</button>
                   </div>
                 )}
@@ -191,13 +186,19 @@ export default function AgentDemo() {
 
         <section className="ad-sec">
           <h4>{t('Règles', 'Rules')}</h4>
-          <div className="ad-md">
-            <p className="ad-md-head"><span>pnl_analytique.md</span><em>{at('r2a') ? 218 : 214} {t('lignes', 'lines')}</em></p>
-            <ol>
-              {rules.map(([n, text, hl]) => <li key={n} className={hl ? 'hl' : undefined}><i>{n}</i>{text}</li>)}
-              <li className="fold"><i>⋮</i>{t(`${at('r2a') ? 213 : 209} lignes`, `${at('r2a') ? 213 : 209} lines`)}</li>
-              {at('r2a') && added.map(([n, text]) => <li key={n} className={valid ? 'added ok' : 'added'}><i>{n}</i>{text}</li>)}
-            </ol>
+          <div className="ad-doc">
+            <p className="ad-doc-head"><Icon d={ICONS.doc} /><span>{t('Règles du P&L analytique', 'Analytical P&L rules')}</span><em>{at('r2a') ? 15 : 14} sections</em></p>
+            <div className="ad-doc-body">
+              <h5>{t('Masse salariale', 'Payroll')}</h5>
+              <ul>{rules.map(([text, hl]) => <li key={text} className={hl ? 'hl' : undefined}>{text}</li>)}</ul>
+              <p className="fold">{t('+ 13 sections : chiffre d’affaires, achats…', '+ 13 sections: revenue, purchases…')}</p>
+              {at('r2a') && (
+                <div className={valid ? 'added ok' : 'added'}>
+                  <h5>{t('Ventilation par département', 'Split by department')}<span className={valid ? 'badge validated' : 'badge proposed'}>{valid ? t('Validé', 'Approved') : t('Proposé', 'Proposed')}</span></h5>
+                  <ul>{added.map((text) => <li key={text}>{text}</li>)}</ul>
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
