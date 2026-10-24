@@ -1,20 +1,25 @@
 // Home hero: the Trame Chat at work, and the P&L's context building up beside it. Thomas asks to add the Lucca
 // payroll to the analytical P&L; the agent reads the context, reconciles payroll with the books, flags a gap and asks
 // for approval. The rules file, sources, controls and change history fill in as it goes; the P&L itself sits behind
-// « Voir le modèle ». A scripted scene in the product's look (Chat page of trame-monorepo, demo branch).
+// « Ouvrir ». A scripted scene in the product's look (Chat page of trame-monorepo, demo branch). The video
+// (video/, Remotion) drives the same scene frame by frame through `playhead`.
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/i18n.js';
 import { prefersReducedMotion } from '../../lib/helpers.js';
 import '../../styles/agent-demo.css';
 
 // The scene, beat by beat (ms on screen). Rendering reads which beats have been reached.
-const BEATS = [
+export const BEATS = [
   ['idle', 900], ['type', 2600], ['sent', 500],
   ['r1a', 1200], ['r1b', 1100], ['r1c', 1200], ['r1d', 1200], ['text1', 2000],
   ['r2a', 1400], ['r2b', 700], ['r2c', 700], ['r2d', 700], ['r2e', 1300], ['text2', 2000],
   ['ask', 3000], ['valid', 900], ['r3', 1100], ['r3b', 1100], ['r3c', 1200], ['done', 9000],
 ];
-const IDX = Object.fromEntries(BEATS.map(([id], i) => [id, i]));
+export const IDX = Object.fromEntries(BEATS.map(([id], i) => [id, i]));
+export const PROMPT = {
+  fr: 'Ajoute la paie Lucca au P&L analytique, ventilée par département.',
+  en: 'Add the Lucca payroll to the analytical P&L, split by department.',
+};
 const LOGO = { hubspot: '/assets/logos/hubspot.svg', pennylane: '/assets/logos/pennylane.png', xero: '/assets/logos/xero.svg', lucca: '/assets/logos/lucca.png' };
 
 const Icon = ({ d }) => <svg viewBox="0 0 24 24" aria-hidden="true">{d.map((p) => <path key={p} d={p} />)}</svg>;
@@ -40,43 +45,53 @@ function ToolRun({ steps, shown, running, t }) {
   return <p className="ad-run done"><Icon d={ICONS.check} /><span>{t(`${list.length} étapes`, `${list.length} steps`)} · {list.join(' · ')}</span></p>;
 }
 
-export default function AgentDemo() {
+/**
+ * playhead (video only): { beat, typed, sheet } set from outside, frame by frame; no timers, no CSS motion.
+ * asset: maps a /public path to where it is served (the video's static files).
+ */
+export default function AgentDemo({ playhead, asset = (path) => path }) {
   const t = useT();
-  const [beat, setBeat] = useState(0);
-  const [typed, setTyped] = useState(0);
+  const controlled = playhead != null;
+  const [beatState, setBeat] = useState(0);
+  const [typedState, setTyped] = useState(0);
   const [hover, setHover] = useState(false);
   const [visible, setVisible] = useState(false);
   const [still, setStill] = useState(false);
-  const [sheet, setSheet] = useState(null); // 'model' | 'control' | null
+  const [sheetState, setSheet] = useState(null); // 'model' | 'control' | … | null
   const rootRef = useRef(null);
+  const beat = controlled ? playhead.beat : beatState;
+  const typed = controlled ? playhead.typed : typedState;
+  const sheet = controlled ? playhead.sheet ?? null : sheetState;
   const id = BEATS[beat][0];
   const at = (b) => beat >= IDX[b];
   const within = (a, b) => beat >= IDX[a] && beat <= IDX[b];
 
-  const prompt = t('Ajoute la paie Lucca au P&L analytique, ventilée par département.', 'Add the Lucca payroll to the analytical P&L, split by department.');
+  const prompt = t(PROMPT.fr, PROMPT.en);
 
   // Reduced motion: the finished scene, no playback. Otherwise play while the scene is on screen.
   useEffect(() => {
+    if (controlled) return undefined;
     if (prefersReducedMotion()) { setStill(true); setBeat(IDX.done); setTyped(prompt.length); return undefined; }
     const io = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), { threshold: 0.35 });
     io.observe(rootRef.current);
     return () => io.disconnect();
-  }, [prompt.length]);
+  }, [prompt.length, controlled]);
 
   useEffect(() => {
-    if (still || !visible || hover || sheet) return undefined;
+    if (controlled || still || !visible || hover || sheet) return undefined;
     const timer = setTimeout(() => setBeat((b) => (b + 1) % BEATS.length), BEATS[beat][1]);
     return () => clearTimeout(timer);
-  }, [beat, visible, hover, sheet, still]);
+  }, [beat, visible, hover, sheet, still, controlled]);
 
   // The prompt types itself into the composer.
   useEffect(() => {
+    if (controlled) return undefined;
     if (id === 'idle') { setTyped(0); setSheet(null); }
     if (id !== 'type' || still) return undefined;
     const every = (BEATS[IDX.type][1] * 0.85) / prompt.length;
     const timer = setInterval(() => setTyped((n) => Math.min(n + 1, prompt.length)), every);
     return () => clearInterval(timer);
-  }, [id, still, prompt.length]);
+  }, [id, still, prompt.length, controlled]);
 
   const run1 = [
     t('Lecture du contexte de « P&L analytique »', 'Reading the context of “Analytical P&L”'),
@@ -137,7 +152,7 @@ export default function AgentDemo() {
   return (
     <div
       ref={rootRef}
-      className="ad"
+      className={controlled ? 'ad static' : 'ad'}
       role="group"
       aria-label={t('Démonstration : le chat Trame ajoute la paie au P&L et enrichit son contexte', 'Demo: the Trame chat adds payroll to the P&L and builds its context')}
       onMouseEnter={() => setHover(true)}
@@ -210,7 +225,7 @@ export default function AgentDemo() {
           <ul className="ad-sources">
             {sources.map(([key, name, what, isNew]) => (
               <li key={key} title={what} className={[isNew && 'new', id === 'r1b' && !isNew && 'hl'].filter(Boolean).join(' ') || undefined}>
-                <img src={LOGO[key]} alt="" width="16" height="16" />{name}
+                <img src={asset(LOGO[key])} alt="" width="16" height="16" />{name}
               </li>
             ))}
           </ul>
@@ -292,7 +307,7 @@ export default function AgentDemo() {
           {sheet === 'unmapped' && <p className="ad-empty">{t('Tous les comptes de charges ont une ligne du P&L.', 'Every expense account has a P&L line.')}</p>}
         </div>
       )}
-      {at('done') && !still && !sheet && <button type="button" className="ad-replay" onClick={() => setBeat(0)}>{t('Rejouer', 'Replay')}</button>}
+      {at('done') && !still && !controlled && !sheet && <button type="button" className="ad-replay" onClick={() => setBeat(0)}>{t('Rejouer', 'Replay')}</button>}
     </div>
   );
 }

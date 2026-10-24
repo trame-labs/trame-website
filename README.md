@@ -35,6 +35,15 @@ public/
   favicon.svg
 ```
 
+## Video
+
+`video/` renders the home hero's chat scene as a 1920 × 1080 video with [Remotion](https://www.remotion.dev) (free licence for companies of up to 3 people), reusing the site's component frame by frame.
+
+```bash
+npm run video          # Remotion Studio, to preview and tweak
+npm run video:render   # video/out/trame-agent-fr.mp4 and trame-agent-en.mp4
+```
+
 ## Languages
 
 Every page exists in French (`/securite`) and English (`/en/securite`); the FR / EN switch in the nav keeps the visitor on the same page.
