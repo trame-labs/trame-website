@@ -1,6 +1,7 @@
-// Home hero: the Trame Chat at work. Thomas asks to add the Lucca payroll to the analytical P&L; the agent reads
-// the P&L's context, reconciles payroll with the books, flags a gap, asks for approval, then the P&L and its context
-// update. A scripted scene in the product's own look (Chat page and context panel of trame-monorepo, demo branch).
+// Home hero: the Trame Chat at work, and the P&L's context building up beside it. Thomas asks to add the Lucca
+// payroll to the analytical P&L; the agent reads the context, reconciles payroll with the books, flags a gap and asks
+// for approval. The rules file, sources, controls and change history fill in as it goes; the P&L itself sits behind
+// « Voir le modèle ». A scripted scene in the product's look (Chat page of trame-monorepo, demo branch).
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../lib/i18n.js';
 import { prefersReducedMotion } from '../../lib/helpers.js';
@@ -8,34 +9,42 @@ import '../../styles/agent-demo.css';
 
 // The scene, beat by beat (ms on screen). Rendering reads which beats have been reached.
 const BEATS = [
-  ['idle', 900], ['type', 2600], ['sent', 600],
-  ['r1a', 1100], ['r1b', 1100], ['r1c', 1200], ['r1d', 1100], ['text1', 2600],
-  ['r2a', 1000], ['r2b', 800], ['r2c', 800], ['r2d', 800], ['r2e', 1100], ['text2', 2400],
-  ['ask', 2800], ['valid', 500], ['r3', 1500], ['done', 9000],
+  ['idle', 900], ['type', 2600], ['sent', 500],
+  ['r1a', 1200], ['r1b', 1100], ['r1c', 1200], ['r1d', 1200], ['text1', 2000],
+  ['r2a', 1400], ['r2b', 700], ['r2c', 700], ['r2d', 700], ['r2e', 1300], ['text2', 2000],
+  ['ask', 3000], ['valid', 900], ['r3', 1300], ['done', 9000],
 ];
 const IDX = Object.fromEntries(BEATS.map(([id], i) => [id, i]));
+const LOGO = { hubspot: '/assets/logos/hubspot.svg', pennylane: '/assets/logos/pennylane.png', xero: '/assets/logos/xero.svg', lucca: '/assets/logos/lucca.png' };
 
-const Sparkles = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.94 14.06 4.5 12l5.44-2.06L12 4.5l2.06 5.44L19.5 12l-5.44 2.06L12 19.5z" /><path d="M19 3v4M17 5h4" /></svg>
-);
-const Check = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="m8.5 12 2.5 2.5 4.5-5" /></svg>
-);
+const Icon = ({ d }) => <svg viewBox="0 0 24 24" aria-hidden="true">{d.map((p) => <path key={p} d={p} />)}</svg>;
+const ICONS = {
+  home: ['M3 10.5 12 3l9 7.5', 'M5 9.5V21h14V9.5'],
+  chat: ['M4 5h16v11H8l-4 4z'],
+  boards: ['M4 4h7v7H4z', 'M13 4h7v4h-7z', 'M13 10h7v10h-7z', 'M4 13h7v7H4z'],
+  tables: ['M4 4h16v16H4z', 'M4 10h16', 'M10 4v16'],
+  plug: ['M9 3v5', 'M15 3v5', 'M6 8h12v3a6 6 0 0 1-12 0z', 'M12 17v4'],
+  sparkles: ['M9.94 14.06 4.5 12l5.44-2.06L12 4.5l2.06 5.44L19.5 12l-5.44 2.06L12 19.5z', 'M19 3v4', 'M17 5h4'],
+  check: ['M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z', 'm8.5 12 2.5 2.5 4.5-5'],
+  flag: ['M5 21V4', 'M5 4h11l-2 4 2 4H5'],
+  ext: ['M7 17 17 7', 'M8 7h9v9'],
+};
 
 /** The product's tool run: the step in flight with a pulsing dot, then one checked line « N étapes · … ». */
 function ToolRun({ steps, shown, running, t }) {
   const list = steps.slice(0, shown);
   if (running) return <p className="ad-run"><span className="ad-dot" />{list[list.length - 1]}</p>;
-  return <p className="ad-run done"><Check /><span>{t(`${list.length} étapes`, `${list.length} steps`)} · {list.join(' · ')}</span></p>;
+  return <p className="ad-run done"><Icon d={ICONS.check} /><span>{t(`${list.length} étapes`, `${list.length} steps`)} · {list.join(' · ')}</span></p>;
 }
 
 export default function AgentDemo() {
   const t = useT();
   const [beat, setBeat] = useState(0);
   const [typed, setTyped] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const [hover, setHover] = useState(false);
   const [visible, setVisible] = useState(false);
   const [still, setStill] = useState(false);
+  const [sheet, setSheet] = useState(null); // 'model' | 'control' | null
   const rootRef = useRef(null);
   const id = BEATS[beat][0];
   const at = (b) => beat >= IDX[b];
@@ -52,14 +61,14 @@ export default function AgentDemo() {
   }, [prompt.length]);
 
   useEffect(() => {
-    if (still || !visible || paused) return undefined;
+    if (still || !visible || hover || sheet) return undefined;
     const timer = setTimeout(() => setBeat((b) => (b + 1) % BEATS.length), BEATS[beat][1]);
     return () => clearTimeout(timer);
-  }, [beat, visible, paused, still]);
+  }, [beat, visible, hover, sheet, still]);
 
   // The prompt types itself into the composer.
   useEffect(() => {
-    if (id === 'idle') setTyped(0);
+    if (id === 'idle') { setTyped(0); setSheet(null); }
     if (id !== 'type' || still) return undefined;
     const every = (BEATS[IDX.type][1] * 0.85) / prompt.length;
     const timer = setInterval(() => setTyped((n) => Math.min(n + 1, prompt.length)), every);
@@ -68,22 +77,56 @@ export default function AgentDemo() {
 
   const run1 = [
     t('Lecture du contexte de « P&L analytique »', 'Reading the context of “Analytical P&L”'),
-    t('Modèle : 14 lignes, sources HubSpot, Pennylane et Xero', 'Model: 14 lines, sources HubSpot, Pennylane and Xero'),
-    t('Salaires en compta : comptes 641 et 645, 2 entités', 'Salaries in the books: accounts 641 and 645, 2 entities'),
-    t('Import Lucca : paie de septembre, 412 salariés', 'Lucca import: September payroll, 412 employees'),
+    t('Sources : HubSpot, Pennylane, Xero', 'Sources: HubSpot, Pennylane, Xero'),
+    t('Salaires en compta : comptes 641 et 645, sans département', 'Salaries in the books: accounts 641 and 645, no department'),
+    t('Lecture de l’export Lucca : 412 salariés, 28 rubriques', 'Reading the Lucca export: 412 employees, 28 pay items'),
   ];
   const run2 = [
-    t('Rapprochement des 28 rubriques Lucca avec les comptes 641 et 645', 'Matching the 28 Lucca pay items to accounts 641 and 645'),
-    t('Contrôle effectifs : 412 = 412', 'Headcount check: 412 = 412'),
-    t('Contrôle brut : 1 642 310 € = 1 642 310 €', 'Gross pay check: €1,642,310 = €1,642,310'),
-    t('Contrôle charges : 366 683 € = 366 683 €', 'Social charges check: €366,683 = €366,683'),
-    t('Contrôle primes : écart de 4 000 €', 'Bonus check: €4,000 gap'),
+    t('Rapprochement des rubriques Lucca avec les comptes 641 et 645', 'Matching Lucca pay items to accounts 641 and 645'),
+    t('Effectifs : 412 = 412', 'Headcount: 412 = 412'),
+    t('Brut : 1 642 310 € = 1 642 310 €', 'Gross pay: €1,642,310 = €1,642,310'),
+    t('Charges : 366 683 € = 366 683 €', 'Social charges: €366,683 = €366,683'),
+    t('Primes : écart de 4 000 €', 'Bonuses: €4,000 gap'),
   ];
   const run3 = [
     t('Ventilation de la masse salariale par département', 'Splitting payroll by department'),
-    t('Mise à jour de « P&L analytique » et de son contexte', 'Updating “Analytical P&L” and its context'),
+    t('Mise à jour du modèle et de son contexte', 'Updating the model and its context'),
   ];
   const count = (from, n) => Math.min(n, beat - IDX[from] + 1);
+  const valid = at('valid');
+
+  // The rules file: its first lines, the rest folded, then what the agent writes (proposed until approved).
+  const rules = [
+    [1, t('# P&L analytique · Acme Groupe', '# Analytical P&L · Acme Group')],
+    [2, t('Consolidé, 2 entités, en k€. Arrêté le 7 du mois.', 'Consolidated, 2 entities, in €k. Closed on the 7th.')],
+    [3, t('## Masse salariale', '## Payroll')],
+    [4, t('- Comptes 641, 645 → Masse salariale, par entité.', '- Accounts 641, 645 → Payroll, by entity.'), id === 'r1c'],
+    [5, t('- Paie comptabilisée par l’écriture OD PAIE du mois.', '- Payroll booked through the month’s OD PAIE entry.')],
+  ];
+  const added = [
+    [215, t('## Masse salariale par département', '## Payroll by department')],
+    [216, t('- Source : Lucca, export de paie mensuel.', '- Source: Lucca, monthly payroll export.')],
+    [217, t('- 28 rubriques Lucca → 641100, 641300, 645100.', '- 28 Lucca pay items → 641100, 641300, 645100.')],
+    [218, t('- Ventilé selon le département du salarié.', '- Split by each employee’s department.')],
+  ];
+
+  const history = [
+    at('valid') && { who: 'Thomas', what: t('Valide la ventilation par département', 'Approves the split by department'), when: '14:03', status: 'validated' },
+    at('ask') && { who: 'agent', what: t('Propose les règles l. 215-218', 'Proposes rules l. 215-218'), when: '14:02', status: valid ? 'validated' : 'proposed' },
+    at('r2e') && { who: 'agent', what: t('Crée le contrôle Paie ↔ compta', 'Creates the Payroll ↔ books control'), when: '14:02', status: 'done' },
+    at('r1d') && { who: 'agent', what: t('Ajoute Lucca aux sources', 'Adds Lucca to the sources'), when: '14:01', status: 'done' },
+    { who: 'Claire', what: t('Met à jour la règle Chiffre d’affaires', 'Updates the Revenue rule'), when: '03/09', status: 'validated' },
+  ].filter(Boolean).slice(0, 3);
+  const STATUS = {
+    proposed: t('Proposé', 'Proposed'), validated: t('Validé', 'Approved'), done: t('Fait', 'Done'),
+  };
+
+  const sources = [
+    ['hubspot', 'HubSpot', 'CRM'],
+    ['pennylane', 'Pennylane', 'Acme France'],
+    ['xero', 'Xero', 'Acme UK'],
+    ...(at('r1d') ? [['lucca', 'Lucca', t('Paie', 'Payroll'), true]] : []),
+  ];
 
   const depts = [
     [t('Production', 'Delivery'), '−1 412,6', '−1,412.6'],
@@ -91,118 +134,141 @@ export default function AgentDemo() {
     [t('Direction générale', 'Management'), '−198,7', '−198.7'],
     [t('Finance et RH', 'Finance and HR'), '−146,3', '−146.3'],
   ];
-  const num = (fr, en) => t(fr, en);
-  const done = at('done');
-  const gap = at('text2');
+  const split = at('r3');
 
   return (
     <div
       ref={rootRef}
       className="ad"
       role="group"
-      aria-label={t('Démonstration : le chat Trame ajoute la paie au P&L', 'Demo: the Trame chat adds payroll to the P&L')}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      aria-label={t('Démonstration : le chat Trame ajoute la paie au P&L et enrichit son contexte', 'Demo: the Trame chat adds payroll to the P&L and builds its context')}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
     >
-      <div className="ad-tabs" aria-hidden="true">
-        <span>Tables</span><span className="on">Chat</span><span>{t('P&L analytique', 'Analytical P&L')}</span>
-      </div>
-      <div className="ad-app">
-        <aside className="ad-side" aria-hidden="true">
-          <div className="ad-ws"><b>A</b>Acme Groupe</div>
-          <p className="ad-over">Navigation</p>
-          <span>{t('Accueil', 'Home')}</span><span className="on">Chat</span><span>{t('Tableaux de bord', 'Dashboards')}</span>
-          <p className="ad-over">Trames</p>
-          <span>Reporting</span><span className="sub">{t('P&L analytique', 'Analytical P&L')}</span><span>{t('Contrôles', 'Controls')}</span>
-          {done && <span className="sub new">{t('Paie ↔ compta', 'Payroll ↔ books')}</span>}
-          <p className="ad-over">Sources</p>
-          <span data-src="hubspot">HubSpot</span><span data-src="pennylane">Pennylane</span><span data-src="xero">Xero</span>
-          {done && <span data-src="lucca" className="new">Lucca · {t('Paie', 'Payroll')}</span>}
-        </aside>
+      <nav className="ad-rail" aria-hidden="true">
+        <b>A</b>
+        <span><Icon d={ICONS.home} /></span>
+        <span className="on"><Icon d={ICONS.chat} /></span>
+        <span><Icon d={ICONS.boards} /></span>
+        <span><Icon d={ICONS.tables} /></span>
+        <span className="end"><Icon d={ICONS.plug} /></span>
+      </nav>
 
-        <section className="ad-chat">
-          <div className="ad-thread">
-            {at('sent') && <div className="ad-user">{prompt}</div>}
-            {at('r1a') && (
-              <div className="ad-agent">
-                <span className="ad-avatar"><Sparkles /></span>
-                <div className="ad-body">
-                  <ToolRun steps={run1} shown={count('r1a', 4)} running={within('r1a', 'r1d')} t={t} />
-                  {at('text1') && (
-                    <p className="ad-text">{t(
-                      <>Le P&L lit déjà <b>HubSpot, Pennylane et Xero</b>. La masse salariale y est d’un seul bloc, <b>2 008 993 €</b> en septembre, sans département. Lucca connaît le département de chaque salarié : je rapproche d’abord sa paie de la compta.</>,
-                      <>The P&L already reads <b>HubSpot, Pennylane and Xero</b>. Payroll sits there as one block, <b>€2,008,993</b> in September, with no department. Lucca knows each employee’s department: I first reconcile its payroll with the books.</>,
-                    )}</p>
-                  )}
-                  {at('r2a') && <ToolRun steps={run2} shown={count('r2a', 5)} running={within('r2a', 'r2e')} t={t} />}
-                  {gap && (
-                    <div className="ad-card">
-                      <ul className="ad-checks">
-                        <li>{t('Effectifs', 'Headcount')}<span>412 = 412</span></li>
-                        <li>{t('Salaire brut', 'Gross pay')}<span>{num('1 642 310 €', '€1,642,310')}</span></li>
-                        <li>{t('Charges sociales', 'Social charges')}<span>{num('366 683 €', '€366,683')}</span></li>
-                        <li className="gap">{t('Primes', 'Bonuses')}<span>{t('écart 4 000 €', '€4,000 gap')}</span></li>
-                      </ul>
-                      <p>{t('Prime de Marc D. (Commercial) saisie dans Lucca le 28/09, après l’envoi de l’écriture de paie. Je la laisse en écart à justifier, sans toucher à la compta.', 'A bonus for Marc D. (Sales) keyed into Lucca on 28 Sep, after the payroll entry was sent. I leave it as a gap to justify, without touching the books.')}</p>
-                    </div>
-                  )}
-                  {at('ask') && (
-                    <div className="ad-ask">
-                      <p>{t('Ventiler la masse salariale de septembre par département ?', 'Split September’s payroll by department?')}</p>
-                      <span>
-                        <button type="button" className={at('valid') ? 'pressed' : undefined} disabled={at('valid')} onClick={() => setBeat(IDX.valid)}>{at('valid') ? t('Validé', 'Approved') : t('Valider', 'Approve')}</button>
-                        <button type="button" className="ghost" tabIndex={-1}>{t('Voir les 412 lignes', 'See the 412 lines')}</button>
-                      </span>
-                    </div>
-                  )}
-                  {at('r3') && <ToolRun steps={run3} shown={count('r3', 2)} running={id === 'r3'} t={t} />}
-                  {done && <p className="ad-text">{t('C’est fait : le P&L ventile la masse salariale par département, et l’écart de 4 000 € est suivi dans Contrôles.', 'Done: the P&L splits payroll by department, and the €4,000 gap is tracked in Controls.')}</p>}
-                </div>
+      <section className="ad-chat">
+        <div className="ad-thread">
+          {at('sent') && <div className="ad-user">{prompt}</div>}
+          {at('r1a') && (
+            <div className="ad-agent">
+              <span className="ad-avatar"><Icon d={ICONS.sparkles} /></span>
+              <div className="ad-body">
+                <ToolRun steps={run1} shown={count('r1a', 4)} running={within('r1a', 'r1d')} t={t} />
+                {at('text1') && <p className="ad-text">{t(<>La masse salariale (<b>2 008 993 €</b> en septembre) n’a pas de département. Je rapproche Lucca de la compta avant de ventiler.</>, <>Payroll (<b>€2,008,993</b> in September) has no department. I reconcile Lucca with the books before splitting.</>)}</p>}
+                {at('r2a') && <ToolRun steps={run2} shown={count('r2a', 5)} running={within('r2a', 'r2e')} t={t} />}
+                {at('text2') && <p className="ad-text">{t(<>3 contrôles concordent. <b>1 écart de 4 000 €</b> : une prime saisie dans Lucca après l’écriture de paie. Je la laisse à justifier.</>, <>3 checks match. <b>A €4,000 gap</b>: a bonus keyed into Lucca after the payroll entry. I leave it to be justified.</>)}</p>}
+                {at('ask') && (
+                  <div className="ad-ask">
+                    <p>{t('Ventiler la masse salariale par département (règles l. 215-218) ?', 'Split payroll by department (rules l. 215-218)?')}</p>
+                    <button type="button" className={valid ? 'pressed' : undefined} disabled={valid} onClick={() => setBeat(IDX.valid)}>{valid ? t('Validé', 'Approved') : t('Valider', 'Approve')}</button>
+                  </div>
+                )}
+                {at('r3') && <ToolRun steps={run3} shown={count('r3', 2)} running={id === 'r3'} t={t} />}
+                {at('done') && <p className="ad-text">{t('C’est fait. ', 'Done. ')}<button type="button" className="ad-link" onClick={() => setSheet('model')}>{t('Voir le modèle', 'See the model')}</button></p>}
               </div>
-            )}
-          </div>
-          <div className="ad-composer">
-            <span className={id === 'type' || id === 'sent' ? 'typing' : undefined}>
-              {id === 'type' ? <>{prompt.slice(0, typed)}<i className="ad-caret" /></> : <em>{t('Posez votre question sur vos chiffres…', 'Ask a question about your figures…')}</em>}
-            </span>
-            <b aria-hidden="true">↑</b>
+            </div>
+          )}
+        </div>
+        <div className="ad-composer">
+          <span>{id === 'type' ? <>{prompt.slice(0, typed)}<i className="ad-caret" /></> : <em>{t('Posez votre question sur vos chiffres…', 'Ask a question about your figures…')}</em>}</span>
+          <b aria-hidden="true">↑</b>
+        </div>
+      </section>
+
+      <aside className={within('r1a', 'r1b') ? 'ad-ctx reading' : 'ad-ctx'} aria-label={t('Contexte du P&L analytique', 'Context of the analytical P&L')}>
+        <div className="ad-ctx-head">
+          <div><p>{t('Contexte', 'Context')}</p><span>{t('P&L analytique', 'Analytical P&L')}</span></div>
+          <button type="button" className={at('done') ? 'ad-model ready' : 'ad-model'} onClick={() => setSheet('model')}>{t('Voir le modèle', 'See the model')} <Icon d={ICONS.ext} /></button>
+        </div>
+
+        <section className="ad-sec">
+          <h4>{t('Règles', 'Rules')}</h4>
+          <div className="ad-md">
+            <p className="ad-md-head"><span>pnl_analytique.md</span><em>{at('r2a') ? 218 : 214} {t('lignes', 'lines')}</em></p>
+            <ol>
+              {rules.map(([n, text, hl]) => <li key={n} className={hl ? 'hl' : undefined}><i>{n}</i>{text}</li>)}
+              <li className="fold"><i>⋮</i>{t(`${at('r2a') ? 213 : 209} lignes`, `${at('r2a') ? 213 : 209} lines`)}</li>
+              {at('r2a') && added.map(([n, text]) => <li key={n} className={valid ? 'added ok' : 'added'}><i>{n}</i>{text}</li>)}
+            </ol>
           </div>
         </section>
 
-        <aside className="ad-panel" aria-label={t('P&L analytique et son contexte', 'Analytical P&L and its context')}>
-          <div className="ad-panel-head">
-            <p>{t('P&L analytique', 'Analytical P&L')}</p>
-            <span>{t('Sept. 2026 · k€ · consolidé', 'Sep 2026 · €k · consolidated')}</span>
+        <section className="ad-sec">
+          <h4>{t('Sources', 'Sources')}</h4>
+          <ul className="ad-sources">
+            {sources.map(([key, name, what, isNew]) => (
+              <li key={key} className={[isNew && 'new', id === 'r1b' && !isNew && 'hl'].filter(Boolean).join(' ') || undefined}>
+                <img src={LOGO[key]} alt="" width="16" height="16" />{name}<span>{what}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="ad-sec">
+          <h4>{t('Contrôles', 'Controls')}</h4>
+          <ul className="ad-controls">
+            <li><button type="button" onClick={() => setSheet('unmapped')}>{t('Comptes non affectés', 'Unmapped accounts')}<Icon d={ICONS.ext} /></button><span className="ok">0</span></li>
+            {at('r2e') && (
+              <li className="new"><button type="button" onClick={() => setSheet('control')}>{t('Paie ↔ compta', 'Payroll ↔ books')}<Icon d={ICONS.ext} /></button><span className="flag"><Icon d={ICONS.flag} />{t('1 écart · 4 000 €', '1 gap · €4,000')}</span></li>
+            )}
+          </ul>
+        </section>
+
+        <section className="ad-sec">
+          <h4>{t('Historique', 'History')}</h4>
+          <ul className="ad-history">
+            {history.map((h) => (
+              <li key={h.what}>
+                <span className={h.who === 'agent' ? 'who agent' : 'who'}>{h.who === 'agent' ? <Icon d={ICONS.sparkles} /> : h.who[0]}</span>
+                <span className="what"><b>{h.who === 'agent' ? t('Agent', 'Agent') : h.who}</b> · {h.what}</span>
+                <span className={`badge ${h.status}`}>{STATUS[h.status]}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </aside>
+
+      {sheet && (
+        <div className="ad-sheet" role="dialog" aria-label={sheet === 'model' ? t('Modèle P&L analytique', 'Analytical P&L model') : t('Table de contrôle', 'Control table')}>
+          <div className="ad-sheet-head">
+            <p>{sheet === 'model' ? t('P&L analytique · sept. 2026 · k€', 'Analytical P&L · Sep 2026 · €k') : sheet === 'control' ? t('Contrôle · Paie ↔ compta · septembre', 'Control · Payroll ↔ books · September') : t('Contrôle · Comptes non affectés', 'Control · Unmapped accounts')}</p>
+            <button type="button" aria-label={t('Fermer', 'Close')} onClick={() => setSheet(null)}>×</button>
           </div>
-          <table className="ad-pnl">
-            <tbody>
-              <tr><td>{t('Chiffre d’affaires', 'Revenue')}</td><td>{num('4 207,2', '4,207.2')}</td></tr>
-              <tr className={['ad-mass', id === 'r1c' && 'hl', done && 'open'].filter(Boolean).join(' ')}>
-                <td>{t('Masse salariale', 'Payroll')}{gap && <em className="ad-gap">{t('écart 4 000 €', '€4,000 gap')}</em>}</td>
-                <td>{num('−2 008,9', '−2,008.9')}</td>
-              </tr>
-              {done && depts.map(([name, fr, en]) => <tr key={name} className="ad-dept"><td>{name}</td><td>{num(fr, en)}</td></tr>)}
-              <tr><td>{t('Sous-traitance', 'Subcontracting')}</td><td>{num('−67,3', '−67.3')}</td></tr>
-              <tr><td>{t('Frais généraux', 'Overheads')}</td><td>{num('−482,1', '−482.1')}</td></tr>
-              <tr className="total"><td>EBITDA</td><td>{num('1 648,9', '1,648.9')}</td></tr>
-            </tbody>
-          </table>
-          <div className={within('r1a', 'r1b') ? 'ad-ctx hl' : 'ad-ctx'}>
-            <p className="ad-over">{t('Contexte du P&L', 'P&L context')}</p>
-            <dl>
-              <dt>Sources</dt>
-              <dd><span data-src="hubspot">HubSpot</span><span data-src="pennylane">Pennylane</span><span data-src="xero">Xero</span>{done && <span data-src="lucca" className="new">Lucca</span>}</dd>
-              <dt>{t('Règles', 'Rules')}</dt>
-              <dd>{t('7xx → Chiffre d’affaires · 641, 645 → Masse salariale', '7xx → Revenue · 641, 645 → Payroll')}{done && <span className="new block">{t('641, 645 ventilés par département (Lucca)', '641, 645 split by department (Lucca)')}</span>}</dd>
-              <dt>{t('Contrôles', 'Controls')}</dt>
-              <dd>{done ? <span className="new">{t('Paie ↔ compta · 3 OK · 1 écart', 'Payroll ↔ books · 3 OK · 1 gap')}</span> : '—'}</dd>
-              <dt>{t('Décisions', 'Decisions')}</dt>
-              <dd>{done ? <span className="new">{t('Thomas · 24/10 · ventilation validée', 'Thomas · 24 Oct · split approved')}</span> : '—'}</dd>
-            </dl>
-          </div>
-        </aside>
-      </div>
-      {done && !still && <button type="button" className="ad-replay" onClick={() => setBeat(0)}>{t('Rejouer', 'Replay')}</button>}
+          {sheet === 'model' && (
+            <table className="ad-table">
+              <tbody>
+                <tr><td>{t('Chiffre d’affaires', 'Revenue')}</td><td>{t('4 207,2', '4,207.2')}</td></tr>
+                <tr className={split ? 'strong' : undefined}><td>{t('Masse salariale', 'Payroll')}{at('r2e') && <em className="ad-flag"><Icon d={ICONS.flag} />{t('écart 4 000 €', '€4,000 gap')}</em>}</td><td>{t('−2 008,9', '−2,008.9')}</td></tr>
+                {split && depts.map(([name, fr, en]) => <tr key={name} className="dept"><td>{name}</td><td>{t(fr, en)}</td></tr>)}
+                <tr><td>{t('Sous-traitance', 'Subcontracting')}</td><td>{t('−67,3', '−67.3')}</td></tr>
+                <tr><td>{t('Frais généraux', 'Overheads')}</td><td>{t('−482,1', '−482.1')}</td></tr>
+                <tr className="total"><td>EBITDA</td><td>{t('1 648,9', '1,648.9')}</td></tr>
+              </tbody>
+            </table>
+          )}
+          {sheet === 'control' && (
+            <table className="ad-table">
+              <thead><tr><th>{t('Contrôle', 'Check')}</th><th>Lucca</th><th>{t('Compta', 'Books')}</th><th>{t('Statut', 'Status')}</th></tr></thead>
+              <tbody>
+                <tr><td>{t('Effectifs', 'Headcount')}</td><td>412</td><td>412</td><td className="ok">OK</td></tr>
+                <tr><td>{t('Salaire brut', 'Gross pay')}</td><td>{t('1 642 310', '1,642,310')}</td><td>{t('1 642 310', '1,642,310')}</td><td className="ok">OK</td></tr>
+                <tr><td>{t('Charges sociales', 'Social charges')}</td><td>{t('366 683', '366,683')}</td><td>{t('366 683', '366,683')}</td><td className="ok">OK</td></tr>
+                <tr className="gap"><td>{t('Primes · Marc D.', 'Bonuses · Marc D.')}</td><td>{t('4 000', '4,000')}</td><td>0</td><td><em className="ad-flag"><Icon d={ICONS.flag} />{t('À justifier', 'To justify')}</em></td></tr>
+              </tbody>
+            </table>
+          )}
+          {sheet === 'unmapped' && <p className="ad-empty">{t('Tous les comptes de charges ont une ligne du P&L.', 'Every expense account has a P&L line.')}</p>}
+        </div>
+      )}
+      {at('done') && !still && !sheet && <button type="button" className="ad-replay" onClick={() => setBeat(0)}>{t('Rejouer', 'Replay')}</button>}
     </div>
   );
 }
