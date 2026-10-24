@@ -37,7 +37,7 @@ public/
 
 ## Video
 
-`video/` renders the home hero's chat scene as a screen-only video (1680 × 930, no frame: the site supplies it) with [Remotion](https://www.remotion.dev) (free licence for companies of up to 3 people), reusing the site's component frame by frame.
+`video/` renders the home hero's chat scene as a screen-only video (1920 × 1080, 16:9, no frame: the site supplies it) with [Remotion](https://www.remotion.dev) (free licence for companies of up to 3 people), reusing the site's component frame by frame.
 
 ```bash
 npm run video          # Remotion Studio, to preview and tweak

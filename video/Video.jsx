@@ -10,9 +10,9 @@ loadGeist('normal', { weights: ['400', '500', '600', '700'], subsets: ['latin', 
 loadGeistMono('normal', { weights: ['400', '500'], subsets: ['latin'] });
 
 export const FPS = 30;
-export const SCALE = 1.5; // the scene is 1120 × 620 on the site
-export const WIDTH = 1120 * SCALE;
-export const HEIGHT = 620 * SCALE;
+export const SCALE = 1920 / 1120; // the scene is 1120 × 630 on the site: 16:9, rendered at 1920 × 1080
+export const WIDTH = 1920;
+export const HEIGHT = 1080;
 const f = (ms) => Math.round((ms * FPS) / 1000);
 
 // The site's beats, with a shorter wait before typing; the final state is held, then the video ends.
