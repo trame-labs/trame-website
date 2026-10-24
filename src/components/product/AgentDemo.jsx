@@ -12,7 +12,7 @@ const BEATS = [
   ['idle', 900], ['type', 2600], ['sent', 500],
   ['r1a', 1200], ['r1b', 1100], ['r1c', 1200], ['r1d', 1200], ['text1', 2000],
   ['r2a', 1400], ['r2b', 700], ['r2c', 700], ['r2d', 700], ['r2e', 1300], ['text2', 2000],
-  ['ask', 3000], ['valid', 900], ['r3', 1300], ['done', 9000],
+  ['ask', 3000], ['valid', 900], ['r3', 1100], ['r3b', 1100], ['r3c', 1200], ['done', 9000],
 ];
 const IDX = Object.fromEntries(BEATS.map(([id], i) => [id, i]));
 const LOGO = { hubspot: '/assets/logos/hubspot.svg', pennylane: '/assets/logos/pennylane.png', xero: '/assets/logos/xero.svg', lucca: '/assets/logos/lucca.png' };
@@ -29,6 +29,8 @@ const ICONS = {
   flag: ['M5 21V4', 'M5 4h11l-2 4 2 4H5'],
   ext: ['M7 17 17 7', 'M8 7h9v9'],
   doc: ['M6 3h9l4 4v14H6z', 'M14 3v5h5', 'M9 12h6', 'M9 16h6'],
+  lock: ['M6 11h12v9H6z', 'M8.5 11V8a3.5 3.5 0 0 1 7 0v3'],
+  trend: ['m4 16 5-5 4 4 7-7', 'M15 8h5v5'],
 };
 
 /** The product's tool run: the step in flight with a pulsing dot, then one checked line « N étapes · … ». */
@@ -92,6 +94,7 @@ export default function AgentDemo() {
   const run3 = [
     t('Ventilation de la masse salariale par département', 'Splitting payroll by department'),
     t('Mise à jour du modèle et de son contexte', 'Updating the model and its context'),
+    t('Reforecast T4 recalculé ; board pack de septembre arrêté, inchangé', 'Q4 reforecast recalculated; September board pack closed, unchanged'),
   ];
   const count = (from, n) => Math.min(n, beat - IDX[from] + 1);
   const valid = at('valid');
@@ -111,7 +114,7 @@ export default function AgentDemo() {
     at('r2e') && { who: 'agent', what: t('Crée le contrôle Paie ↔ compta', 'Creates the Payroll ↔ books control'), when: '14:02', status: 'done' },
     at('r1d') && { who: 'agent', what: t('Ajoute Lucca aux sources', 'Adds Lucca to the sources'), when: '14:01', status: 'done' },
     { who: 'Claire', what: t('Met à jour la règle Chiffre d’affaires', 'Updates the Revenue rule'), when: '03/09', status: 'validated' },
-  ].filter(Boolean).slice(0, 3);
+  ].filter(Boolean).slice(0, 2);
   const STATUS = {
     proposed: t('Proposé', 'Proposed'), validated: t('Validé', 'Approved'), done: t('Fait', 'Done'),
   };
@@ -166,8 +169,8 @@ export default function AgentDemo() {
                     <button type="button" className={valid ? 'pressed' : undefined} disabled={valid} onClick={() => setBeat(IDX.valid)}>{valid ? t('Validé', 'Approved') : t('Valider', 'Approve')}</button>
                   </div>
                 )}
-                {at('r3') && <ToolRun steps={run3} shown={count('r3', 2)} running={id === 'r3'} t={t} />}
-                {at('done') && <p className="ad-text">{t('C’est fait. ', 'Done. ')}<button type="button" className="ad-link" onClick={() => setSheet('model')}>{t('Voir le modèle', 'See the model')}</button></p>}
+                {at('r3') && <ToolRun steps={run3} shown={count('r3', 3)} running={within('r3', 'r3c')} t={t} />}
+                {at('done') && <p className="ad-text">{t('C’est fait, le reforecast suit. ', 'Done, and the reforecast follows. ')}<button type="button" className="ad-link" onClick={() => setSheet('model')}>{t('Ouvrir le P&L', 'Open the P&L')}</button></p>}
               </div>
             </div>
           )}
@@ -181,7 +184,7 @@ export default function AgentDemo() {
       <aside className={within('r1a', 'r1b') ? 'ad-ctx reading' : 'ad-ctx'} aria-label={t('Contexte du P&L analytique', 'Context of the analytical P&L')}>
         <div className="ad-ctx-head">
           <div><p>{t('Contexte', 'Context')}</p><span>{t('P&L analytique', 'Analytical P&L')}</span></div>
-          <button type="button" className={at('done') ? 'ad-model ready' : 'ad-model'} onClick={() => setSheet('model')}>{t('Voir le modèle', 'See the model')} <Icon d={ICONS.ext} /></button>
+          <button type="button" className={at('done') ? 'ad-model ready' : 'ad-model'} onClick={() => setSheet('model')}>{t('Ouvrir', 'Open')} <Icon d={ICONS.ext} /></button>
         </div>
 
         <section className="ad-sec">
@@ -206,10 +209,18 @@ export default function AgentDemo() {
           <h4>{t('Sources', 'Sources')}</h4>
           <ul className="ad-sources">
             {sources.map(([key, name, what, isNew]) => (
-              <li key={key} className={[isNew && 'new', id === 'r1b' && !isNew && 'hl'].filter(Boolean).join(' ') || undefined}>
-                <img src={LOGO[key]} alt="" width="16" height="16" />{name}<span>{what}</span>
+              <li key={key} title={what} className={[isNew && 'new', id === 'r1b' && !isNew && 'hl'].filter(Boolean).join(' ') || undefined}>
+                <img src={LOGO[key]} alt="" width="16" height="16" />{name}
               </li>
             ))}
+          </ul>
+        </section>
+
+        <section className="ad-sec">
+          <h4>{t('Modèles connectés', 'Connected models')}</h4>
+          <ul className="ad-controls">
+            <li><button type="button" onClick={() => setSheet('board')}><Icon d={ICONS.boards} />Board pack<Icon d={ICONS.ext} /></button>{at('r3c') ? <span className="frozen"><Icon d={ICONS.lock} />{t('Sept. arrêté, inchangé', 'Sep closed, unchanged')}</span> : <span className="muted">{t('lit ce P&L', 'reads this P&L')}</span>}</li>
+            <li className={at('r3b') ? 'new' : undefined}><button type="button" onClick={() => setSheet('reforecast')}><Icon d={ICONS.trend} />{t('Reforecast T4', 'Q4 reforecast')}<Icon d={ICONS.ext} /></button>{at('r3b') ? <span className="updated">{t('Recalculé', 'Recalculated')}</span> : <span className="muted">{t('lit ce P&L', 'reads this P&L')}</span>}</li>
           </ul>
         </section>
 
@@ -240,7 +251,7 @@ export default function AgentDemo() {
       {sheet && (
         <div className="ad-sheet" role="dialog" aria-label={sheet === 'model' ? t('Modèle P&L analytique', 'Analytical P&L model') : t('Table de contrôle', 'Control table')}>
           <div className="ad-sheet-head">
-            <p>{sheet === 'model' ? t('P&L analytique · sept. 2026 · k€', 'Analytical P&L · Sep 2026 · €k') : sheet === 'control' ? t('Contrôle · Paie ↔ compta · septembre', 'Control · Payroll ↔ books · September') : t('Contrôle · Comptes non affectés', 'Control · Unmapped accounts')}</p>
+            <p>{{ model: t('P&L analytique · sept. 2026 · k€', 'Analytical P&L · Sep 2026 · €k'), control: t('Contrôle · Paie ↔ compta · septembre', 'Control · Payroll ↔ books · September'), unmapped: t('Contrôle · Comptes non affectés', 'Control · Unmapped accounts'), board: t('Board pack · septembre 2026', 'Board pack · September 2026'), reforecast: t('Reforecast T4 · masse salariale par département', 'Q4 reforecast · payroll by department') }[sheet]}</p>
             <button type="button" aria-label={t('Fermer', 'Close')} onClick={() => setSheet(null)}>×</button>
           </div>
           {sheet === 'model' && (
@@ -263,6 +274,18 @@ export default function AgentDemo() {
                 <tr><td>{t('Salaire brut', 'Gross pay')}</td><td>{t('1 642 310', '1,642,310')}</td><td>{t('1 642 310', '1,642,310')}</td><td className="ok">OK</td></tr>
                 <tr><td>{t('Charges sociales', 'Social charges')}</td><td>{t('366 683', '366,683')}</td><td>{t('366 683', '366,683')}</td><td className="ok">OK</td></tr>
                 <tr className="gap"><td>{t('Primes · Marc D.', 'Bonuses · Marc D.')}</td><td>{t('4 000', '4,000')}</td><td>0</td><td><em className="ad-flag"><Icon d={ICONS.flag} />{t('À justifier', 'To justify')}</em></td></tr>
+              </tbody>
+            </table>
+          )}
+          {sheet === 'board' && <p className="ad-empty">{t('Le board pack de septembre est arrêté depuis le 07/10 : il ne change pas. La ventilation par département y entrera avec le mois d’octobre.', 'The September board pack has been closed since 7 Oct: it does not change. The split by department enters it with October.')}</p>}
+          {sheet === 'reforecast' && (
+            <table className="ad-table">
+              <thead><tr><th>{t('Masse salariale · k€', 'Payroll · €k')}</th><th>{t('Oct.', 'Oct')}</th><th>{t('Nov.', 'Nov')}</th><th>{t('Déc.', 'Dec')}</th></tr></thead>
+              <tbody>
+                <tr><td>{t('Production', 'Delivery')}</td><td>{t('−1 418,0', '−1,418.0')}</td><td>{t('−1 431,2', '−1,431.2')}</td><td>{t('−1 446,9', '−1,446.9')}</td></tr>
+                <tr><td>{t('Commercial', 'Sales')}</td><td>{t('−253,8', '−253.8')}</td><td>{t('−268,1', '−268.1')}</td><td>{t('−268,1', '−268.1')}</td></tr>
+                <tr><td>{t('Direction générale', 'Management')}</td><td>{t('−198,7', '−198.7')}</td><td>{t('−198,7', '−198.7')}</td><td>{t('−198,7', '−198.7')}</td></tr>
+                <tr><td>{t('Finance et RH', 'Finance and HR')}</td><td>{t('−146,3', '−146.3')}</td><td>{t('−152,9', '−152.9')}</td><td>{t('−152,9', '−152.9')}</td></tr>
               </tbody>
             </table>
           )}
