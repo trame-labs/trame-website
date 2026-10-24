@@ -152,5 +152,6 @@
   .ad-replay { right: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .ad *, .ad *::before { animation: none !important; transition: none !important; } }
-/* The video renders frame by frame: no CSS motion, the scene moves through its playhead. */
+/* The video renders frame by frame: no CSS motion, the scene moves through its playhead; the site frames it. */
+.ad.static { border: 0; border-radius: 0; box-shadow: none; }
 .ad.static *, .ad.static *::before, .ad.static *::after { animation: none !important; transition: none !important; }
