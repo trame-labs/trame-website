@@ -4,6 +4,7 @@ import { useT } from '../lib/i18n.js';
 import { Rails } from '../components/layout/Rails.jsx';
 import { ClosingCta, DemoButton, LinkButton } from '../components/blocks.jsx';
 import Hero from './Hero.jsx';
+import AgentDemo from '../components/product/AgentDemo.jsx';
 
 export default function Home() {
   const t = useT();
@@ -18,72 +19,10 @@ export default function Home() {
         title={t('Votre finance engineer.', 'Your finance engineer.')}
         lead={t(<>Trame réunit votre compta, vos ventes, vos banques et votre paie dans une base fiable et auditable, prête pour l’IA. <span>Le travail d’un finance engineer, sans le recruter.</span></>, <>Trame brings your accounting, sales, banks and payroll together in one reliable, auditable foundation, ready for AI. <span>The work of a finance engineer, without the hire.</span></>)}
         pills={[t('Tous vos outils réconciliés', 'All your tools reconciled'), t('Un seul chiffre pour toute l’entreprise', 'One number for the whole company'), t('Chaque décision gardée, avec son auteur', 'Every decision kept, with its author'), t('Les salaires protégés, même de l’IA', 'Salaries protected, even from AI')]}
+        wide
         ctas={<><DemoButton /><LinkButton to="#mois" size="lg" variant="ghostInverse">{t('Voir comment ça marche', 'See how it works')}</LinkButton></>}
       >
-        <figure aria-label={t('Exemple : un P&L arrêté dans Trame, ligne par ligne', 'Example: a closed P&L in Trame, line by line')} className="card" data-autocycle="" data-ledger="" style={{ margin: 0 }}>
-        <div className="card-head">
-        <p className="card-title">{t(<>Société exemple · P&amp;L de septembre <span>· k€</span></>, <>Example company · September P&amp;L <span>· €k</span></>)}</p>
-        <span className="chip"><svg aria-hidden="true"><use href="#i-lock"></use></svg>{t('Arrêté le 7 octobre', 'Closed on Oct 7')}</span>
-        </div>
-        <div className="card-head" style={{ paddingBlock: '10px', background: 'var(--paper)' }}>
-        <span style={{ fontSize: '12.5px', color: 'var(--faint)' }}>{t('Vu par', 'Viewed as')}</span>
-        <div aria-label={t('Choisir qui regarde', 'Choose who is viewing')} className="seg" role="group">
-        <button aria-pressed="true" data-who="daf" type="button">CFO</button>
-        <button aria-pressed="false" data-who="ctrl" type="button">{t('Contrôleur', 'Controller')}</button>
-        <button aria-pressed="false" data-who="ia" type="button">{t('Claude, pour le CEO', 'Claude, for the CEO')}</button>
-        </div>
-        </div>
-        <table className="rows">
-        <tbody>
-        <tr className="pick" data-row="ca"><td>{t('Chiffre d’affaires', 'Revenue')}<span className="src">{t('Shopify · Zalando · revendeurs, rapprochés de la compta', 'Shopify · Zalando · resellers, reconciled with the books')}</span></td><td className="v">{t('1 842,6', '1,842.6')}</td></tr>
-        <tr className="pick" data-row="mb"><td>{t('Marge sur coûts variables', 'Contribution margin')}<span className="src">{t('Coût de revient · logistique · commissions', 'Cost of goods · logistics · commissions')}</span></td><td className="v">{t('1 101,3', '1,101.3')}</td></tr>
-        <tr aria-expanded="true" className="pick on" data-row="ms"><td>{t('Masse salariale', 'Payroll')}
-                <span className="src" data-for="daf">{t('Paie de septembre · 58 salariés · détail par salarié', 'September payroll · 58 employees · per-employee detail')}</span>
-        <span className="src" data-for="ctrl" hidden>{t('Par équipe · salaires individuels masqués', 'By team · individual salaries masked')}</span>
-        <span className="src" data-for="ia" hidden>{t('Par équipe · aucun salaire individuel', 'By team · no individual salaries')}</span></td>
-        <td className="v">{t('−612,8', '−612.8')}</td></tr>
-        <tr className="pick" data-row="ac"><td>{t('Autres charges', 'Other expenses')}<span className="src">{t('Pennylane · notes de frais · abonnements', 'Pennylane · expense reports · subscriptions')}</span></td><td className="v">{t('−274,0', '−274.0')}</td></tr>
-        <tr className="pick total" data-row="eb"><td>EBITDA<span className="src">{t('Version présentée au board le 9 octobre', 'Version presented to the board on Oct 9')}</span></td><td className="v">{t('214,5', '214.5')}</td></tr>
-        </tbody>
-        </table>
-        <div className="drawer" data-trame="ca" hidden>
-        <h4>{t('D’où vient le chiffre d’affaires', 'Where revenue comes from')}</h4>
-        <ul><li>{t('Shopify · 2 316 commandes', 'Shopify · 2,316 orders')}<b>{t('1 104,2', '1,104.2')}</b></li><li>{t('Zalando · relevé de commissions', 'Zalando · commission statement')}<b>{t('418,9', '418.9')}</b></li><li>{t('Revendeurs · factures Pennylane', 'Resellers · Pennylane invoices')}<b>{t('319,5', '319.5')}</b></li></ul>
-        <p className="dec">{t(<><b>Règle v3.</b> Chiffre d’affaires reconnu à l’expédition, net des retours.</>, <><b>Rule v3.</b> Revenue recognized on shipment, net of returns.</>)}</p>
-        <p className="dec">{t(<><b>3 oct. · Bastien, contrôleur de gestion.</b> Avoirs Zalando de septembre classés en retours, pas en remises. Validé par le CFO.</>, <><b>Oct 3 · Bastien, financial controller.</b> September Zalando credit notes classified as returns, not discounts. Approved by the CFO.</>)}</p>
-        </div>
-        <div className="drawer" data-trame="mb" hidden>
-        <h4>{t('D’où vient la marge sur coûts variables', 'Where contribution margin comes from')}</h4>
-        <ul><li>{t('Chiffre d’affaires', 'Revenue')}<b>{t('1 842,6', '1,842.6')}</b></li><li>{t('Coût de revient des ventes', 'Cost of goods sold')}<b>{t('−512,4', '−512.4')}</b></li><li>{t('Logistique · factures du prestataire', 'Logistics · provider invoices')}<b>{t('−131,3', '−131.3')}</b></li><li>{t('Commissions · Zalando et PSP', 'Commissions · Zalando and PSPs')}<b>{t('−97,6', '−97.6')}</b></li></ul>
-        <p className="dec">{t(<><b>1er oct. · Nadia, CFO.</b> Frais de port refacturés aux clients reclassés en chiffre d’affaires, au lieu d’être déduits de la logistique.</>, <><b>Oct 1 · Nadia, CFO.</b> Shipping fees re-invoiced to customers reclassified as revenue, instead of being deducted from logistics.</>)}</p>
-        </div>
-        <div className="drawer" data-trame="ms">
-        <h4>{t('D’où vient la masse salariale', 'Where payroll comes from')}</h4>
-        <div data-for="daf">
-        <ul><li>Camille D. · product manager<b>{t('−9,8', '−9.8')}</b></li><li>{t('Hugo M. · développeur', 'Hugo M. · developer')}<b>{t('−8,9', '−8.9')}</b></li><li>{t('56 autres salariés', '56 other employees')}<b>{t('−568,4', '−568.4')}</b></li><li>{t('Primes du troisième trimestre provisionnées', 'Q3 bonuses accrued')}<b>{t('−25,7', '−25.7')}</b></li></ul>
-        <p className="dec" style={{ marginTop: '10px' }}>{t(<><b>7 oct. · Nadia, CFO.</b> Primes du trimestre provisionnées sur septembre. Paie rapprochée des comptes 641 et 645 ; seul écart, cette provision.</>, <><b>Oct 7 · Nadia, CFO.</b> Quarterly bonuses accrued in September. Payroll reconciled with accounts 641 and 645; the only variance is this accrual.</>)}</p>
-        </div>
-        <div data-for="ctrl" hidden>
-        <ul><li>{t('Produit et tech', 'Product and tech')}<b>{t('−298,4', '−298.4')}</b></li><li>{t('Ventes et marketing', 'Sales and marketing')}<b>{t('−201,9', '−201.9')}</b></li><li>{t('Opérations et support', 'Operations and support')}<b>{t('−112,5', '−112.5')}</b></li><li>Camille D. · product manager<b className="masked">••••</b></li><li>{t('Hugo M. · développeur', 'Hugo M. · developer')}<b className="masked">••••</b></li></ul>
-        <p className="hint" style={{ marginTop: '8px' }}>{t('Ici, les salaires individuels sont réservés au CFO. Vous décidez qui les voit.', 'Here, individual salaries are reserved for the CFO. You decide who sees them.')}</p>
-        </div>
-        <div data-for="ia" hidden>
-        <ul><li>{t('Produit et tech', 'Product and tech')}<b>{t('−298,4', '−298.4')}</b></li><li>{t('Ventes et marketing', 'Sales and marketing')}<b>{t('−201,9', '−201.9')}</b></li><li>{t('Opérations et support', 'Operations and support')}<b>{t('−112,5', '−112.5')}</b></li></ul>
-        <p className="hint" style={{ marginTop: '8px' }}>{t('Claude répond avec les droits du CEO : la masse salariale par équipe, aucun salaire individuel.', 'Claude answers with the CEO’s permissions: payroll by team, no individual salaries.')}</p>
-        </div>
-        </div>
-        <div className="drawer" data-trame="ac" hidden>
-        <h4>{t('D’où viennent les autres charges', 'Where other expenses come from')}</h4>
-        <ul><li>{t('Marketing · régies publicitaires', 'Marketing · ad networks')}<b>{t('−146,3', '−146.3')}</b></li><li>{t('Locaux et abonnements', 'Premises and subscriptions')}<b>{t('−82,6', '−82.6')}</b></li><li>{t('Honoraires et frais divers', 'Fees and miscellaneous')}<b>{t('−45,1', '−45.1')}</b></li></ul>
-        <p className="dec">{t(<><b>Règle v2.</b> Abonnements annuels étalés sur douze mois.</>, <><b>Rule v2.</b> Annual subscriptions spread over twelve months.</>)}</p>
-        </div>
-        <div className="drawer" data-trame="eb" hidden>
-        <h4>{t('D’où vient l’EBITDA', 'Where EBITDA comes from')}</h4>
-        <p className="dec">{t(<><b>7 oct. · Nadia, CFO.</b> Septembre arrêté. Version présentée au board le 9 octobre.</>, <><b>Oct 7 · Nadia, CFO.</b> September closed. Version presented to the board on October 9.</>)}</p>
-        <p className="dec">{t(<><b>12 oct. · écart daté.</b> Remboursement Stripe de 1,2 k€ sur une commande de septembre. Septembre ne bouge pas ; l’écart passe sur octobre, avec son motif.</>, <><b>Oct 12 · dated variance.</b> €1.2k Stripe refund on a September order. September doesn’t move; the variance goes to October, with its reason.</>)}</p>
-        </div>
-        <figcaption className="card-foot"><span>{t('Septembre est arrêté. Ce qui change après passe sur octobre, daté et justifié. Cliquez sur une ligne pour voir d’où elle vient.', 'September is closed. Anything that changes afterward goes to October, dated and justified. Click a line to see where it comes from.')}</span><em>{t('Exemple fictif', 'Fictional example')}</em></figcaption>
-        </figure>
+        <AgentDemo />
       </Hero>
       <Rails>
         <div className="logos"><div className="wrap">
