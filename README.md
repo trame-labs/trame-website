@@ -33,7 +33,6 @@ scripts/
   lib/behaviors.js  interactions of the example cards (rows that open, "seen by" switch), ported from the mock-up
 public/
   favicon.svg
-  assets/product/  screenshots of the « P&L analytique » demo (trame-monorepo, demo/pnl-dashboards) for the home hero tour
 ```
 
 ## Languages

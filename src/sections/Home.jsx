@@ -4,7 +4,7 @@ import { useT } from '../lib/i18n.js';
 import { Rails } from '../components/layout/Rails.jsx';
 import { ClosingCta, DemoButton, LinkButton } from '../components/blocks.jsx';
 import Hero from './Hero.jsx';
-import DemoTour from '../components/product/DemoTour.jsx';
+import AgentDemo from '../components/product/AgentDemo.jsx';
 
 export default function Home() {
   const t = useT();
@@ -22,7 +22,7 @@ export default function Home() {
         wide
         ctas={<><DemoButton /><LinkButton to="#mois" size="lg" variant="ghostInverse">{t('Voir comment ça marche', 'See how it works')}</LinkButton></>}
       >
-        <DemoTour />
+        <AgentDemo />
       </Hero>
       <Rails>
         <div className="logos"><div className="wrap">
