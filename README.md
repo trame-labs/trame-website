@@ -24,7 +24,7 @@ src/
     Sprite.jsx   SVG icons used by the example cards
   sections/      Home, Hero (home hero with the woven emblem)
   pages/         one file per page (use cases, sectors, finance engineer, integrations, security, demo, legal)
-  content/       routes.js (site map, labels in FR and EN); simulator.js (fictional data and pure calculations behind the home page's product screen)
+  content/       routes.js (site map, labels in FR and EN)
   lib/router.js  tiny History API router (Link, navigate, usePageMeta); English pages live under /en
   entry-server.jsx  renders one URL to HTML at build time
 scripts/
@@ -33,6 +33,7 @@ scripts/
   lib/behaviors.js  interactions of the example cards (rows that open, "seen by" switch), ported from the mock-up
 public/
   favicon.svg
+  assets/product/  screenshots of the « P&L analytique » demo (trame-monorepo, demo/pnl-dashboards) for the home hero tour
 ```
 
 ## Languages
