@@ -1,7 +1,7 @@
 // The hero's scene as a video, screen only (the site supplies the frame around it): the site's AgentDemo driven frame
-// by frame, with a camera that moves to what matters at each step and a cursor. It opens on the P&L, opens marketing
-// spend onto its accounts, closes it, edits the P&L in the chat (approving the reconciliation, picking the Lucca field)
-// and goes back to the P&L, changed, where it opens the flagged gap. The end fades through the background to the P&L
+// by frame, with a camera that zooms on the P&L's figures (the chat stays whole screen) and a cursor. It opens on the
+// P&L, opens advertising onto its accounts, closes it, edits the P&L in the chat (approving the reconciliation, picking
+// the Lucca field) and goes back to the P&L, changed, where it opens the flagged gap. The end fades through the background to the P&L
 // as it was, so the video loops.
 // One composition per language.
 import { useLayoutEffect, useRef } from 'react';
@@ -48,17 +48,7 @@ const MOVE = 900;
 const SHOTS = [
   { at: 0 },
   { at: START.pop + 100, sel: '.ad-pop', ay: 0.6, zoom: 1.35 },
-  { at: START.edit },
-  { at: START.idle + 100, sel: '.ad-composer', zoom: 1.5 },
-  { at: START.sent },
-  { at: START.r1b - 300, sel: '.ad-chat', ay: 0.72, zoom: 1.3 }, // after the whole screen, chat and context
-  { at: START.r1c - 300, sel: '.ad-ctx', ay: 0.3, zoom: 1.3 }, // the payroll rule, then Lucca joining the sources
-  { at: START.text1 - 100, sel: '.ad-chat', ay: 0.72, zoom: 1.3 },
-  { at: START.r2e - 300, sel: '.ad-ctx', ay: 0.52, zoom: 1.4 },
-  { at: START.text2 - 100, sel: '.ad-ask', ay: 0.2, zoom: 1.45 },
-  { at: START.field + 100, sel: '.ad-choice', zoom: 1.45 },
-  { at: START.pick + 250, sel: '.ad-ctx', ay: 0.4, zoom: 1.35 },
-  { at: START.done - 150 },
+  { at: START.edit }, // the chat, whole screen throughout
   { at: START.after + 300, sel: '.ad-pnl tr.paySales', ax: 0.51, zoom: 1.1 }, // labels to M/M, September's flag in view
   { at: GAP_AT, sel: '.ad-pop', zoom: 1.35 },
   { at: GAP_END + 100 },
@@ -82,7 +72,7 @@ const CURSOR = [
   { at: 300, sel: '.ad-pnl tr.mkt td.cur .ad-cell', dx: 140, dy: 110 },
   { at: goFor(CLICK.cell), sel: '.ad-pnl tr.mkt td.cur .ad-cell' },
   { at: goFor(CLICK.close), sel: '.ad-pop-head button' },
-  { at: goFor(CLICK.edit), sel: '.ad-page-edit', from: '.ad-pnl tr.arr td.cur .ad-cell' }, // where the popup closed
+  { at: goFor(CLICK.edit), sel: '.ad-page-edit', from: '.ad-pnl tr.mrr td.cur .ad-cell' }, // where the popup closed
   { at: goFor(CLICK.approve) - 200, sel: '.ad-ask button', dx: -220, dy: 70, jump: true },
   { at: goFor(CLICK.approve), sel: '.ad-ask button' },
   { at: goFor(CLICK.pick), sel: '.ad-choice li:first-child button', ax: 0.3 },

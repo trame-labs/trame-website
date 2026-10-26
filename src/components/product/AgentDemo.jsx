@@ -62,15 +62,31 @@ const P = {
   payRnd: [842.9, 847.3, 851.7, 858.7, 866.5, 873.5],
   payGna: [326.5, 329.1, 336.6, 334.4, 334.6, 336.2],
   newCustomers: [12, 13, 11, 12, 13, 14],
+  // Contracted at month end (HubSpot), so a little above the month's recognised subscriptions.
+  mrr: [3701.6, 3763.2, 3829.4, 3891.0, 3952.7, 4018.3],
+  customers: [1240, 1252, 1262, 1273, 1285, 1298],
 };
+// Each cost section's lines: a share of it, rounded to 0.1, and the rest.
+const cut = (series, share) => {
+  const a = series.map((v) => Math.round(v * share * 10) / 10);
+  return [a, series.map((v, i) => Math.round((v - a[i]) * 10) / 10)];
+};
+[P.cloud, P.subcontracting] = cut(P.hosting, 0.64);
+[P.ads, P.agencies] = cut(P.marketing, 0.877);
+[P.licences, P.maintenance] = cut(P.tools, 0.7);
+[P.rent, P.fees] = cut(P.overheads, 0.55);
 // Where each line's figures come from: its accounts, with their share of the line (the last takes the rest).
 const ACCOUNTS = {
   subs: [['7061', 'Abonnements · Acme France', 'Subscriptions · Acme France', 0.62], ['7061', 'Abonnements · Acme UK', 'Subscriptions · Acme UK']],
   svc: [['7062', 'Services · Acme France', 'Services · Acme France', 0.7], ['7062', 'Services · Acme UK', 'Services · Acme UK']],
-  host: [['6228', 'Hébergement cloud', 'Cloud hosting', 0.64], ['604', 'Sous-traitance', 'Subcontracting']],
-  mkt: [['6231', 'Annonces et publicité', 'Advertising', 0.6505], ['6233', 'Salons et événements', 'Trade shows and events', 0.2264], ['6226', 'Agences marketing', 'Marketing agencies']],
-  tools: [['6516', 'Licences logicielles', 'Software licences', 0.7], ['6156', 'Maintenance', 'Maintenance']],
-  over: [['6132', 'Loyers', 'Rent', 0.55], ['6227', 'Honoraires', 'Fees', 0.35], ['6064', 'Fournitures', 'Supplies']],
+  cloud: [['6228', 'Hébergement cloud', 'Cloud hosting']],
+  sub: [['604', 'Sous-traitance', 'Subcontracting']],
+  mkt: [['6231', 'Annonces et publicité', 'Advertising', 0.742], ['6233', 'Salons et événements', 'Trade shows and events']],
+  agencies: [['6226', 'Agences marketing', 'Marketing agencies']],
+  licences: [['6516', 'Licences logicielles', 'Software licences']],
+  maintenance: [['6156', 'Maintenance', 'Maintenance']],
+  rent: [['6132', 'Loyers', 'Rent']],
+  fees: [['6227', 'Honoraires', 'Fees', 0.78], ['6064', 'Fournitures', 'Supplies']],
   pay: [['641', 'Salaires', 'Salaries', 0.72], ['645', 'Charges sociales', 'Social charges']],
 };
 const ISO = ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08', '2026-09'];
@@ -102,6 +118,7 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
   const [peek, setPeek] = useState(false); // the P&L opened from the chat, mid-scene
   const [popState, setPop] = useState(null); // a figure's lineage, opened by hand: { key, i, sql }
   const [querySql, setQuerySql] = useState(false); // the P&L's query, unfolded in its context
+  const [folds, setFolds] = useState({}); // context sections opened or closed by hand: { [key]: open }
   const rootRef = useRef(null);
   const beat = controlled ? playhead.beat : beatState;
   const typed = controlled ? playhead.typed : typedState;
@@ -134,7 +151,7 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
   // The prompt types itself into the composer.
   useEffect(() => {
     if (controlled) return undefined;
-    if (id === 'pnl' || id === 'idle') { setTyped(0); setSheet(null); setPop(null); setQuerySql(false); }
+    if (id === 'pnl' || id === 'idle') { setTyped(0); setSheet(null); setPop(null); setQuerySql(false); setFolds({}); }
     if (id !== 'type' || still) return undefined;
     const every = (BEATS[IDX.type][1] * 0.85) / prompt.length;
     const timer = setInterval(() => setTyped((n) => Math.min(n + 1, prompt.length)), every);
@@ -196,14 +213,13 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
     ? `SELECT l.month,\n  CASE WHEN e.department IN ('Sales', 'Marketing')\n    THEN 'pay_' || lower(e.department)\n    ELSE m.line END AS line,\n  sum(l.debit - l.credit) AS amount\nFROM ledger_lines l\nJOIN pnl_mapping m USING (account)\nLEFT JOIN lucca.employees e\n  ON m.line = 'pay' AND e.employee_id = l.employee_id\nGROUP BY 1, 2`
     : `SELECT l.month, m.line,\n  sum(l.debit - l.credit) AS amount\nFROM ledger_lines l\nJOIN pnl_mapping m USING (account)\nGROUP BY 1, 2`;
 
+  // The P&L's history: this change only, one line per change, newest first; Thomas's approvals update their line.
   const history = [
-    at('pick') && { b: 'pick', who: 'Thomas', what: t('Choisit le champ Département de Lucca', 'Picks Lucca’s Department field'), when: '14:04', status: 'validated' },
-    at('field') && { b: 'field', who: 'agent', what: t('Propose la règle Paie sales & marketing', 'Proposes the Sales & marketing payroll rule'), when: '14:03', status: picked ? 'validated' : 'proposed' },
-    at('valid') && { b: 'valid', who: 'Thomas', what: t('Valide le rapprochement Lucca ↔ compta', 'Approves the Lucca ↔ books reconciliation'), when: '14:03', status: 'validated' },
-    at('r2e') && { b: 'r2e', who: 'agent', what: t('Crée le contrôle Lucca ↔ compta', 'Creates the Lucca ↔ books control'), when: '14:02', status: 'done' },
-    at('r1d') && { b: 'r1d', who: 'agent', what: t('Ajoute Lucca aux sources', 'Adds Lucca to the sources'), when: '14:01', status: 'done' },
-    { who: 'Claire', what: t('Met à jour la règle Chiffre d’affaires', 'Updates the Revenue rule'), when: '03/09', status: 'validated' },
-  ].filter(Boolean).slice(0, 2);
+    at('r3b') && { b: 'r3b', what: t('Ajoute la paie aux coûts Sales & marketing', 'Adds payroll to sales and marketing costs'), status: 'done' },
+    at('field') && { b: 'field', what: t('Propose la règle Paie sales & marketing', 'Proposes the Sales & marketing payroll rule'), status: picked ? 'validated' : 'proposed' },
+    at('r2e') && { b: 'r2e', what: t('Crée le contrôle Lucca ↔ compta', 'Creates the Lucca ↔ books control'), status: valid ? 'validated' : 'done' },
+    at('r1d') && { b: 'r1d', what: t('Ajoute Lucca aux sources', 'Adds Lucca to the sources'), status: 'done' },
+  ].filter(Boolean);
   const STATUS = {
     proposed: t('Proposé', 'Proposed'), validated: t('Validé', 'Approved'), done: t('Fait', 'Done'),
   };
@@ -214,6 +230,23 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
     ['xero', 'Xero', 'Acme UK'],
     ...(at('r1d') ? [['lucca', 'Lucca', t('Paie', 'Payroll'), true]] : []),
   ];
+  /**
+   * A section of the context: folded with its count until the agent works in it (opens: the beat it does, none: always
+   * open); opened or closed by hand on the site.
+   */
+  const fold = (key, title, opens, count, body) => {
+    const open = folds[key] ?? (!opens || at(opens));
+    return (
+      <section className="ad-sec">
+        <h4>
+          <button type="button" className="ad-sec-toggle" aria-expanded={open} onClick={() => setFolds({ ...folds, [key]: !open })}>
+            <Icon d={ICONS.chevron} />{title}{!open && count != null && <em>{count}</em>}
+          </button>
+        </h4>
+        {open && <div className="ad-sec-body" style={opens && folds[key] == null ? enter(opens) : undefined}>{body}</div>}
+      </section>
+    );
+  };
   const sourceList = (hl) => (
     <ul className="ad-sources">
       {sources.map(([key, name, what, isNew]) => (
@@ -232,6 +265,11 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
   const k = (n) => num(n);
   const cost = (n) => `−${num(n)}`;
   const pct = (n) => t(`${num(n)} %`, `${num(n)}%`);
+  const whole = (r, n) => {
+    if (r.kind === 'ratio') return r.f(n);
+    const v = n.toLocaleString(locale, { maximumFractionDigits: 0 });
+    return r.f === cost ? `−${v}` : v;
+  };
   const revenue = add(P.subscriptions, P.services);
   const payroll = split ? add(P.paySupport, P.payRnd, P.payGna) : add(P.paySupport, P.paySales, P.payMarketing, P.payRnd, P.payGna);
   const sm = split ? add(P.marketing, P.paySales, P.payMarketing) : P.marketing;
@@ -239,23 +277,27 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
   const ebitda = revenue.map((v, i) => gross[i] - sm[i] - P.tools[i] - P.overheads[i] - payroll[i]);
   const pay = (key, fr, en, extra) => split && { key, kind: 'item', isNew: true, label: t(`Paie · ${fr}`, `Payroll · ${en}`), v: P[key], f: cost, accounts: 'pay', lucca: en, ...extra };
   const rows = [
-    { key: 'arr', kind: 'kpi', label: 'ARR', v: P.subscriptions.map((v) => v * 12), f: k, parts: ['subs'], formula: t('Abonnements du mois × 12', 'Monthly subscriptions × 12'), expr: 'subs * 12' },
+    { key: 'mrr', kind: 'kpi', label: 'MRR', v: P.mrr, f: k, crm: true },
     { key: 'rev', kind: 'total', label: t('Chiffre d’affaires reconnu', 'Recognised revenue'), v: revenue, f: k, parts: ['subs', 'svc'] },
     { key: 'subs', kind: 'item', label: t('Abonnements', 'Subscriptions'), v: P.subscriptions, f: k, accounts: 'subs' },
     { key: 'svc', kind: 'item', label: 'Services', v: P.services, f: k, accounts: 'svc' },
-    { key: 'cor', kind: 'section', label: t('Coût des ventes', 'Cost of revenue'), v: P.hosting, f: cost, parts: ['host'] },
-    { key: 'host', kind: 'item', label: t('Hébergement et sous-traitance', 'Hosting and subcontracting'), v: P.hosting, f: cost, accounts: 'host' },
+    { key: 'cor', kind: 'section', label: t('Coût des ventes', 'Cost of revenue'), v: P.hosting, f: cost, parts: ['cloud', 'sub'] },
+    { key: 'cloud', kind: 'item', label: t('Hébergement cloud', 'Cloud hosting'), v: P.cloud, f: cost, accounts: 'cloud' },
+    { key: 'sub', kind: 'item', label: t('Sous-traitance', 'Subcontracting'), v: P.subcontracting, f: cost, accounts: 'sub' },
     { key: 'gm', kind: 'total', label: t('Marge brute', 'Gross margin'), v: gross, f: k, parts: ['rev', 'cor'] },
     { key: 'gmp', kind: 'ratio', label: t('% marge brute', 'Gross margin %'), v: ratio(gross, revenue, 100), f: pct, pts: true, parts: ['gm', 'rev'], formula: t('Marge brute ÷ CA reconnu', 'Gross margin ÷ revenue'), expr: 'gm / rev' },
-    { key: 'sm', kind: 'section', label: 'Sales & marketing', v: sm, f: cost, parts: ['mkt', 'paySales', 'payMarketing'] },
-    { key: 'mkt', kind: 'item', label: t('Dépenses marketing', 'Marketing spend'), v: P.marketing, f: cost, accounts: 'mkt' },
+    { key: 'sm', kind: 'section', label: 'Sales & marketing', v: sm, f: cost, parts: ['mkt', 'agencies', 'paySales', 'payMarketing'] },
+    { key: 'mkt', kind: 'item', label: t('Publicité et événements', 'Advertising and events'), v: P.ads, f: cost, accounts: 'mkt' },
+    { key: 'agencies', kind: 'item', label: t('Agences marketing', 'Marketing agencies'), v: P.agencies, f: cost, accounts: 'agencies' },
     pay('paySales', 'Sales', 'Sales', { gap: at('r2e') }), // the September bonus missing from the books
     pay('payMarketing', 'Marketing', 'Marketing'),
     { key: 'cac', kind: 'ratio', label: 'CAC', v: ratio(sm, P.newCustomers), f: k, payroll: true, lowerIsBetter: true, parts: ['sm'], customers: true, formula: t('Sales & marketing ÷ nouveaux clients', 'Sales & marketing ÷ new customers'), expr: 'sm / new_customers' },
-    { key: 'rnd', kind: 'section', label: 'R&D', v: P.tools, f: cost, parts: ['tools'] },
-    { key: 'tools', kind: 'item', label: t('Logiciels et outils', 'Software and tools'), v: P.tools, f: cost, accounts: 'tools' },
-    { key: 'gna', kind: 'section', label: t('Frais généraux', 'General and admin'), v: P.overheads, f: cost, parts: ['over'] },
-    { key: 'over', kind: 'item', label: t('Frais de structure', 'Overheads'), v: P.overheads, f: cost, accounts: 'over' },
+    { key: 'rnd', kind: 'section', label: 'R&D', v: P.tools, f: cost, parts: ['licences', 'maintenance'] },
+    { key: 'licences', kind: 'item', label: t('Licences logicielles', 'Software licences'), v: P.licences, f: cost, accounts: 'licences' },
+    { key: 'maintenance', kind: 'item', label: 'Maintenance', v: P.maintenance, f: cost, accounts: 'maintenance' },
+    { key: 'gna', kind: 'section', label: t('Frais généraux', 'General and admin'), v: P.overheads, f: cost, parts: ['rent', 'fees'] },
+    { key: 'rent', kind: 'item', label: t('Loyers', 'Rent'), v: P.rent, f: cost, accounts: 'rent' },
+    { key: 'fees', kind: 'item', label: t('Honoraires et fournitures', 'Fees and supplies'), v: P.fees, f: cost, accounts: 'fees' },
     { key: 'pay', kind: 'section', label: t('Masse salariale non ventilée', 'Unallocated payroll'), v: payroll, f: cost, gap: at('r2e') && !split, accounts: 'pay' },
     { key: 'ebitda', kind: 'total', label: 'EBITDA', v: ebitda, f: k, parts: ['gm', 'sm', 'rnd', 'gna', 'pay'] },
     { key: 'ebp', kind: 'ratio', label: t('% marge EBITDA', 'EBITDA margin %'), v: ratio(ebitda, revenue, 100), f: pct, pts: true, parts: ['ebitda', 'rev'], formula: t('EBITDA ÷ CA reconnu', 'EBITDA ÷ revenue'), expr: 'ebitda / rev' },
@@ -267,6 +309,14 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
   const lineage = (r, i) => ({ ...source(r, i), gap: r.gap && i === MONTHS.length - 1 });
   const source = (r, i) => {
     const month = ISO[i];
+    if (r.crm) {
+      return {
+        lines: [[null, t('Clients actifs en fin de mois', 'Active customers at month end'), P.customers[i].toLocaleString(locale)]],
+        icon: ICONS.db,
+        source: t('HubSpot · contrats récurrents actifs en fin de mois', 'HubSpot · recurring contracts active at month end'),
+        sql: `SELECT sum(monthly_amount) AS mrr\nFROM hubspot.deals\nWHERE recurring\n  AND active_on = last_day('${month}-01')`,
+      };
+    }
     if (r.accounts) {
       const accounts = ACCOUNTS[r.accounts];
       let rest = r.v[i];
@@ -328,15 +378,22 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
         <b aria-hidden="true">A</b>
         <span aria-hidden="true"><Icon d={ICONS.home} /></span>
         <button type="button" className={view === 'chat' ? 'chat on' : 'chat'} aria-label={t('Chat', 'Chat')} onClick={openChat}><Icon d={ICONS.chat} /></button>
-        <button type="button" className={view === 'pnl' ? 'pnl on' : 'pnl'} aria-label={t('P&L analytique', 'Analytical P&L')} onClick={openPnl}><Icon d={ICONS.boards} /></button>
+        <button type="button" className={view === 'pnl' ? 'pnl on' : 'pnl'} aria-label={t('P&L analytique', 'Management P&L')} onClick={openPnl}><Icon d={ICONS.boards} /></button>
         <span aria-hidden="true"><Icon d={ICONS.tables} /></span>
         <span aria-hidden="true" className="end"><Icon d={ICONS.plug} /></span>
       </nav>
 
       {view === 'pnl' && (
-        <section className="ad-page" style={id === 'after' ? enter('after') : undefined} aria-label={t('P&L analytique', 'Analytical P&L')}>
+        <section className="ad-page" style={id === 'after' ? enter('after') : undefined} aria-label={t('P&L analytique', 'Management P&L')}>
           <div className="ad-page-head">
-            <h3>{t('P&L analytique', 'Analytical P&L')}</h3>
+            <div className="ad-page-title">
+              <h3>{t('P&L analytique', 'Management P&L')}</h3>
+              <ul className="ad-page-sources" aria-label={t('Sources', 'Sources')}>
+                {sources.map(([key, name, , isNew]) => (
+                  <li key={key} className={isNew && id === 'after' ? 'new' : undefined} style={isNew && id === 'after' ? enter('after') : undefined}><img src={asset(LOGO[key])} alt="" width="14" height="14" />{name}</li>
+                ))}
+              </ul>
+            </div>
             <div className="ad-page-tools" aria-hidden="true">
               <span className="ad-filter"><em>{t('Entité', 'Entity')}</em>Acme<Icon d={ICONS.chevron} /></span>
               <span className="ad-filter"><em>{t('Période', 'Period')}</em>{t('avr. – sept. 2026', 'Apr – Sep 2026')}<Icon d={ICONS.chevron} /></span>
@@ -370,7 +427,7 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
                         return (
                           <td key={MONTHS[i][1]} className={[last ? 'cur' : i < 4 && 'early', gap && 'anomaly'].filter(Boolean).join(' ') || undefined} title={gap ? t('Écart de 4 000 € avec la compta', '€4,000 gap with the books') : undefined}>
                             {gap && <Icon d={ICONS.flag} />}
-                            <button type="button" className="ad-cell" aria-expanded={open} onClick={() => (open ? closePop() : setPop({ key: r.key, i }))}>{r.f(n)}</button>
+                            <button type="button" className="ad-cell" aria-expanded={open} onClick={() => (open ? closePop() : setPop({ key: r.key, i }))}>{whole(r, n)}</button>
                             {open && (
                               <div className={row < rows.length / 2 ? 'ad-pop down' : 'ad-pop'} role="dialog" style={enter('pop')} aria-label={t('D’où vient ce chiffre', 'Where this figure comes from')}>
                                 <div className="ad-pop-head">
@@ -438,7 +495,7 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
             )}
           </div>}
           <div className="ad-composer">
-            {centered && <p className="ad-attach"><span><Icon d={ICONS.boards} />{t('P&L analytique', 'Analytical P&L')} · Acme</span></p>}
+            {centered && <p className="ad-attach"><span><Icon d={ICONS.boards} />{t('P&L analytique', 'Management P&L')} · Acme</span></p>}
             <span style={enter('type')}>{id === 'type' ? <>{prompt.slice(0, typed)}<i className="ad-caret" /></> : <em>{t('Posez votre question sur vos chiffres…', 'Ask a question about your figures…')}</em>}</span>
             <b aria-hidden="true">↑</b>
           </div>
@@ -446,16 +503,15 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
       )}
 
       {view === 'chat' && !centered && (
-        <aside className={within('r1a', 'r1b') ? 'ad-ctx reading' : 'ad-ctx'} style={enter('r1a')} aria-label={t('Contexte du P&L analytique', 'Context of the analytical P&L')}>
+        <aside className={within('r1a', 'r1b') ? 'ad-ctx reading' : 'ad-ctx'} style={enter('r1a')} aria-label={t('Contexte du P&L analytique', 'Context of the management P&L')}>
           <div className="ad-ctx-head">
-            <div><p>{t('Contexte', 'Context')}</p><span>{t('P&L analytique', 'Analytical P&L')}</span></div>
+            <div><p>{t('Contexte', 'Context')}</p><span>{t('P&L analytique', 'Management P&L')}</span></div>
             <button type="button" className={at('done') ? 'ad-model ready' : 'ad-model'} onClick={openPnl}>{t('Ouvrir', 'Open')} <Icon d={ICONS.ext} /></button>
           </div>
 
-          <section className="ad-sec">
-            <h4>{t('Règles', 'Rules')}</h4>
+          {fold('rules', t('Règles', 'Rules'), null, null, (
             <div className="ad-doc">
-              <p className="ad-doc-head"><Icon d={ICONS.doc} /><span>{t('Règles du P&L analytique', 'Analytical P&L rules')}</span><em>{at('field') ? 15 : 14} sections</em></p>
+              <p className="ad-doc-head"><Icon d={ICONS.doc} /><span>{t('Règles du P&L analytique', 'Management P&L rules')}</span><em>{at('field') ? 15 : 14} sections</em></p>
               <div className="ad-doc-body">
                 <h5>{t('Masse salariale', 'Payroll')}</h5>
                 <ul>{rules.map(([text, hl]) => <li key={text} className={hl ? 'hl' : undefined}>{text}</li>)}</ul>
@@ -473,43 +529,37 @@ export default function AgentDemo({ playhead, asset = (path) => path }) {
               </div>
               {querySql && <pre className="ad-sql">{query}</pre>}
             </div>
-          </section>
+          ))}
 
-          <section className="ad-sec">
-            <h4>{t('Sources', 'Sources')}</h4>
-            {sourceList(id === 'r1c')}
-          </section>
+          {fold('sources', t('Sources', 'Sources'), 'r1d', sources.length, sourceList(id === 'r1c'))}
 
-          <section className="ad-sec">
-            <h4>{t('Modèles connectés', 'Connected models')}</h4>
+          {fold('models', t('Modèles connectés', 'Connected models'), 'r3b', 2, (
             <ul className="ad-controls">
               <li><button type="button" onClick={() => setSheet('board')}><Icon d={ICONS.boards} />Board pack<Icon d={ICONS.ext} /></button>{at('r3c') ? <span className="frozen"><Icon d={ICONS.lock} />{t('Sept. arrêté, inchangé', 'Sep closed, unchanged')}</span> : <span className="muted">{t('lit ce P&L', 'reads this P&L')}</span>}</li>
               <li className={at('r3b') ? 'new' : undefined} style={at('r3b') ? enter('r3b') : undefined}><button type="button" onClick={() => setSheet('reforecast')}><Icon d={ICONS.trend} />{t('Reforecast T4', 'Q4 reforecast')}<Icon d={ICONS.ext} /></button>{at('r3b') ? <span className="updated">{t('Recalculé', 'Recalculated')}</span> : <span className="muted">{t('lit ce P&L', 'reads this P&L')}</span>}</li>
             </ul>
-          </section>
+          ))}
 
-          <section className="ad-sec">
-            <h4>{t('Contrôles', 'Controls')}</h4>
+          {fold('controls', t('Contrôles', 'Controls'), 'r2e', at('r2e') ? 2 : 1, (
             <ul className="ad-controls">
               <li><button type="button" onClick={() => setSheet('unmapped')}>{t('Comptes non affectés', 'Unmapped accounts')}<Icon d={ICONS.ext} /></button><span className="ok">0</span></li>
               {at('r2e') && (
                 <li className="new" style={enter('r2e')}><button type="button" onClick={() => setSheet('control')}>{t('Lucca ↔ compta', 'Lucca ↔ books')}<Icon d={ICONS.ext} /></button><span className="flag"><Icon d={ICONS.flag} />{t('1 écart · 4 000 €', '1 gap · €4,000')}</span></li>
               )}
             </ul>
-          </section>
+          ))}
 
-          <section className="ad-sec">
-            <h4>{t('Historique', 'History')}</h4>
+          {fold('history', t('Historique', 'History'), 'r1d', history.length || null, (
             <ul className="ad-history">
               {history.map((h) => (
-                <li key={h.what} style={h.b && enter(h.b)}>
-                  <span className={h.who === 'agent' ? 'who agent' : 'who'}>{h.who === 'agent' ? <Icon d={ICONS.sparkles} /> : h.who[0]}</span>
-                  <span className="what"><b>{h.who === 'agent' ? t('Agent', 'Agent') : h.who}</b> · {h.what}</span>
+                <li key={h.what} style={enter(h.b)}>
+                  <span className="who agent"><Icon d={ICONS.sparkles} /></span>
+                  <span className="what"><b>{t('Agent', 'Agent')}</b> · {h.what}</span>
                   <span className={`badge ${h.status}`}>{STATUS[h.status]}</span>
                 </li>
               ))}
             </ul>
-          </section>
+          ))}
         </aside>
       )}
 
