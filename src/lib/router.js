@@ -25,13 +25,29 @@ export function navigate(to) {
   listeners.forEach((fn) => fn());
 }
 
-const read = () => ({ ...splitLang(window.location.pathname), hash: window.location.hash.slice(1) });
+// Pre-rendering (scripts/prerender.js) has no window: it sets the URL to render, and collects each page's meta.
+const isServer = typeof window === 'undefined';
+let serverUrl = '/';
+let serverMeta = null;
+export const setServerUrl = (url) => { serverUrl = url; serverMeta = null; };
+export const takePageMeta = () => serverMeta;
 
-/** Current language, language-neutral path and hash; re-renders on navigate() and on back/forward. */
+const read = () => (isServer
+  ? { ...splitLang(serverUrl), hash: '' }
+  : { ...splitLang(window.location.pathname), hash: window.location.hash.slice(1) });
+
+/**
+ * Current language, language-neutral path and hash; re-renders on navigate() and on back/forward.
+ * The hash is picked up after the first render, so hydration matches the pre-rendered page (which has none).
+ */
 export function useLocation() {
-  const [loc, setLoc] = useState(read);
+  const [loc, setLoc] = useState(() => ({ ...read(), hash: '' }));
   useEffect(() => {
-    const update = () => setLoc(read());
+    const update = () => setLoc((prev) => {
+      const next = read();
+      return next.lang === prev.lang && next.path === prev.path && next.hash === prev.hash ? prev : next;
+    });
+    update();
     listeners.add(update);
     window.addEventListener('popstate', update);
     return () => { listeners.delete(update); window.removeEventListener('popstate', update); };
@@ -57,7 +73,8 @@ export function Link({ to, lang, onClick, children, ...rest }) {
 }
 
 /** Sets the document title and meta description for the current page. */
-export function usePageMeta(title, description) {
+export function usePageMeta(title, description, { noindex = false } = {}) {
+  if (isServer) serverMeta = { title, description, noindex };
   useEffect(() => {
     document.title = title;
     document.querySelector('meta[name="description"]')?.setAttribute('content', description);

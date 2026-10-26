@@ -1,13 +1,13 @@
 # trame-website
 
-Marketing site for [trame-labs.com](https://trame-labs.com) — a one-page React site with a “Réserver une démo” modal, built from the Claude Design project *Trame Labs Design System* (`ui_kits/website`).
+Marketing site for [trame-labs.com](https://trame-labs.com) — a React site pre-rendered to static HTML, built from the Claude Design project *Trame Labs Design System* (`ui_kits/website`).
 
 ## Develop
 
 ```bash
 npm install
 npm run dev       # http://localhost:5173
-npm run build     # static output in dist/
+npm run build     # one static HTML page per route in dist/, plus 404.html, sitemap.xml, robots.txt
 npm run preview   # serve the build
 ```
 
@@ -26,10 +26,22 @@ src/
   pages/         one file per page (use cases, sectors, finance engineer, integrations, security, demo, legal)
   content/       routes.js (site map, labels in FR and EN)
   lib/router.js  tiny History API router (Link, navigate, usePageMeta); English pages live under /en
+  entry-server.jsx  renders one URL to HTML at build time
+scripts/
+  prerender.js   writes dist/<route>/index.html with its own head (title, description, canonical, hreflang, Open Graph)
   lib/i18n.js    useT(): copy is written as t('français', 'English') pairs next to the markup
   lib/behaviors.js  interactions of the example cards (rows that open, "seen by" switch), ported from the mock-up
 public/
   favicon.svg
+```
+
+## Video
+
+`video/` renders the home hero's chat scene as a screen-only video (1920 × 1080, 16:9, no frame: the site supplies it) with [Remotion](https://www.remotion.dev) (free licence for companies of up to 3 people), reusing the site's component frame by frame.
+
+```bash
+npm run video          # Remotion Studio, to preview and tweak
+npm run video:render   # video/out/trame-agent-fr.mp4 and trame-agent-en.mp4
 ```
 
 ## Languages
@@ -39,9 +51,15 @@ To change a text, edit both sides of its `t('…', '…')` pair in the page file
 
 ## Pages
 
-`/`, `/cas-usage/{cash-analytique,pnl-analytique,chiffre-affaires,consolidation,budget-realise}`, `/secteurs/{saas,retail-e-commerce}`, `/finance-engineer`, `/integrations`, `/securite`, `/demo`, `/mentions-legales`, and the same under `/en`. Unknown paths show the home page.
+`/`, `/cas-usage/{cash-analytique,pnl-analytique,chiffre-affaires,consolidation,budget-realise}`, `/secteurs/{saas,retail-e-commerce}`, `/finance-engineer`, `/integrations`, `/securite`, `/demo`, `/mentions-legales`, and the same under `/en`. Unknown paths show the 404 page.
 
-Client-side routing: the host must serve `index.html` for every path (SPA fallback). `vite dev` and `vite preview` already do.
+To add a page: create it in `pages/`, call `usePageMeta(title, description)` in it, and add its path to `PAGES` in `App.jsx`. The build pre-renders it in both languages and adds it to the sitemap.
+
+## SEO and hosting
+
+`npm run build` renders every page to static HTML, so search engines, link previews and AI crawlers get the full content and the page's own title, description, canonical URL, `hreflang` pair and Open Graph tags without running JavaScript. The browser then hydrates the page and navigation stays client-side.
+
+Deploy `dist/` to any static host. No SPA fallback is needed: the host should serve `404.html` for unknown paths (Vercel, Netlify, Cloudflare Pages and GitHub Pages do so by default). Canonical URLs have no trailing slash (`/securite`): keep the host's trailing-slash setting consistent with that.
 
 ## Known gaps
 

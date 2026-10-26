@@ -15,13 +15,14 @@ import Integrations from './pages/Integrations.jsx';
 import Securite from './pages/Securite.jsx';
 import Demo from './pages/Demo.jsx';
 import MentionsLegales from './pages/MentionsLegales.jsx';
+import NotFound from './pages/NotFound.jsx';
 import { LangContext } from './lib/i18n.js';
 import { attachBehaviors } from './lib/behaviors.js';
 import { useLocation } from './lib/router.js';
 import { scrollToId } from './lib/helpers.js';
 
 // Language-neutral paths; English pages are the same paths under /en.
-const PAGES = {
+export const PAGES = {
   '/': Home,
   '/cas-usage/cash-analytique': CashAnalytique,
   '/cas-usage/pnl-analytique': PnlAnalytique,
@@ -51,7 +52,7 @@ export default function App() {
   // Wire the example cards' interactions on every new page (or language).
   useEffect(() => attachBehaviors(document.getElementById('root')), [path, lang]);
 
-  const Page = PAGES[path] || Home;
+  const Page = PAGES[path] || NotFound;
   return (
     <LangContext.Provider value={lang}>
       <Sprite />
